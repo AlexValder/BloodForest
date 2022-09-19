@@ -1,0 +1,13 @@
+.import/
+.idea/
+export.cfg
+export_presets.cfg
+*.translation
+.mono/
+.vs/
+data_*/
+*.user
+*.ini
+docs/
+build/
+settings.ini

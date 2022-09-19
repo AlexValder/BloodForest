@@ -1,0 +1,16 @@
+[gd_resource type="Environment" load_steps=3 format=2]
+
+[ext_resource path="res://assets/textures/skybox/sinister_panorama.png" type="Texture" id=1]
+
+[sub_resource type="PanoramaSky" id=7]
+panorama = ExtResource( 1 )
+
+[resource]
+background_mode = 2
+background_sky = SubResource( 7 )
+ambient_light_color = Color( 1, 1, 1, 1 )
+ambient_light_energy = 0.2
+ambient_light_sky_contribution = 0.0
+fog_color = Color( 0, 0, 0, 1 )
+fog_sun_color = Color( 0.811765, 0.968627, 1, 1 )
+fog_depth_begin = 5.0
