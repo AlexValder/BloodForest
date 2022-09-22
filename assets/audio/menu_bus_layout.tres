@@ -1,0 +1,34 @@
+[gd_resource type="AudioBusLayout" load_steps=3 format=2]
+
+[sub_resource type="AudioEffectHighPassFilter" id=1]
+resource_name = "HighPassFilter"
+resonance = 0.48
+db = 1
+
+[sub_resource type="AudioEffectFilter" id=2]
+resource_name = "Filter"
+resonance = 0.27
+
+[resource]
+bus/1/name = "Drone"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = -24.948
+bus/1/send = "Master"
+bus/2/name = "Insects"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = -19.6683
+bus/2/send = "Master"
+bus/2/effect/0/effect = SubResource( 1 )
+bus/2/effect/0/enabled = true
+bus/3/name = "Wind"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = -13.5162
+bus/3/send = "Master"
+bus/3/effect/0/effect = SubResource( 2 )
+bus/3/effect/0/enabled = true

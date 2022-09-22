@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=26 format=2]
 
 [ext_resource path="res://scenes/levels/main_menu.gd" type="Script" id=1]
 [ext_resource path="res://assets/gui/default.tres" type="Theme" id=2]
@@ -13,6 +13,9 @@
 [ext_resource path="res://scenes/scenery/grass03_summer.tscn" type="PackedScene" id=11]
 [ext_resource path="res://scenes/scenery/bush06_summer.tscn" type="PackedScene" id=12]
 [ext_resource path="res://assets/textures/scenery/easter_egg.png" type="Texture" id=13]
+[ext_resource path="res://assets/textures/scenery/mountains_bg.png" type="Texture" id=14]
+[ext_resource path="res://assets/audio/music/vgm-atmospheric-air.mp3" type="AudioStream" id=15]
+[ext_resource path="res://assets/audio/music/mixkit-night-forest-with-insects-2414 (online-audio-converter.com).mp3" type="AudioStream" id=16]
 
 [sub_resource type="PlaneMesh" id=6]
 size = Vector2( 20, 20 )
@@ -22,7 +25,7 @@ albedo_texture = ExtResource( 8 )
 uv1_scale = Vector3( 10, 10, 10 )
 
 [sub_resource type="QuadMesh" id=8]
-size = Vector2( 0.5, 0.5 )
+size = Vector2( 0.3, 0.3 )
 
 [sub_resource type="SpatialMaterial" id=9]
 flags_transparent = true
@@ -30,6 +33,14 @@ flags_unshaded = true
 vertex_color_use_as_albedo = true
 params_billboard_mode = 1
 albedo_texture = ExtResource( 13 )
+
+[sub_resource type="QuadMesh" id=10]
+size = Vector2( 70, 25 )
+
+[sub_resource type="SpatialMaterial" id=11]
+flags_transparent = true
+params_billboard_mode = 1
+albedo_texture = ExtResource( 14 )
 
 [sub_resource type="Shader" id=5]
 code = "shader_type canvas_item;
@@ -49,12 +60,16 @@ shader_param/color1 = Color( 1, 0.141176, 0.141176, 1 )
 shader_param/color2 = Color( 0.490196, 0.105882, 0.105882, 1 )
 shader_param/speed = 7.5
 
+[sub_resource type="AudioStreamRandomPitch" id=12]
+audio_stream = ExtResource( 15 )
+
 [node name="root" type="Node"]
 script = ExtResource( 1 )
 
 [node name="camera" type="Camera" parent="."]
 transform = Transform( 0.707107, 0.194905, 0.679715, 0, 0.961262, -0.275637, -0.707107, 0.194905, 0.679715, 0.0681044, 0.472061, 0.0523945 )
 environment = ExtResource( 5 )
+current = true
 fov = 50.0
 far = 50.0
 
@@ -62,130 +77,100 @@ far = 50.0
 transform = Transform( 0.789631, 0, 0.613582, 0, 1, 0, -0.613582, 0, 0.789631, 0, 0, 0 )
 
 [node name="central_tree" parent="bg" instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.266, 0, -4.836 )
+transform = Transform( 0.975989, 0, -0.21782, 0, 1, 0, 0.21782, 0, 0.975989, 0.32957, 0, -4.7589 )
 
 [node name="tree01_summer" type="Spatial" parent="bg"]
 
 [node name="tree02" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -13.121, 0, -17.7947 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.14021, 1.90735e-06, -11.4525 )
 
 [node name="tree03" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.287677, 0, -20.776 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.966786, 9.53674e-07, -11.4462 )
 
 [node name="tree04" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( -0.343824, 0, -0.939034, 0, 1, 0, 0.939034, 0, -0.343824, 9.65386, 0, -22.1597 )
+transform = Transform( 0.685881, 0, -0.727713, 0, 1, 0, 0.727713, 0, 0.685881, -7.90536, 0, -11.8386 )
 
 [node name="tree05" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( -0.343824, 0, -0.939034, 0, 1, 0, 0.939034, 0, -0.343824, -7.69803, 1.90735e-06, -20.7681 )
-
-[node name="tree07" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( 0.317735, 0, 0.94818, 0, 1, 0, -0.94818, 0, 0.317735, -22.5222, 0, -8.57068 )
-
-[node name="tree08" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( 0.781128, 0, -0.62437, 0, 1, 0, 0.62437, 0, 0.781128, -18.4688, 0, -16.2068 )
-
-[node name="tree09" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( 0.589125, 0, 0.808041, 0, 1, 0, -0.808041, 0, 0.589125, -16.236, 0, -11.928 )
+transform = Transform( -0.343824, 0, -0.939034, 0, 1, 0, 0.939034, 0, -0.343824, -9.16259, 1.90735e-06, -15.4975 )
 
 [node name="tree10" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( -0.00602126, 0, -0.999982, 0, 1, 0, 0.999982, 0, -0.00602126, 16.7424, 0, -22.6866 )
+transform = Transform( 0.891561, 0, -0.452902, 0, 1, 0, 0.452902, 0, 0.891561, -5.20425, 0, -18.4135 )
 
 [node name="tree11" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( -0.00602126, 0, -0.999982, 0, 1, 0, 0.999982, 0, -0.00602126, 19.6463, 0, -9.83559 )
-
-[node name="tree12" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( -0.936947, 0, 0.349471, 0, 1, 0, -0.349471, 0, -0.936947, 20.9702, 0, 0.114085 )
+transform = Transform( -0.00602126, 0, -0.999982, 0, 1, 0, 0.999982, 0, -0.00602126, 10.734, 0, -10.5803 )
 
 [node name="tree13" parent="bg/tree01_summer" instance=ExtResource( 4 )]
-transform = Transform( -0.936947, 0, 0.349471, 0, 1, 0, -0.349471, 0, -0.936947, 19.6831, 0, -17.2459 )
+transform = Transform( -0.936947, 0, 0.349471, 0, 1, 0, -0.349471, 0, -0.936947, 5.1231, 4.76837e-07, -8.99692 )
 
 [node name="tree02_fall" type="Spatial" parent="bg"]
 
 [node name="tree02" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.66994, 0, -20.5852 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.20538, 0, -15.3146 )
 
 [node name="tree03" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8.45087, 0, -18.0287 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -6.35512, 1.90735e-06, -6.49866 )
 
 [node name="tree04" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.69141, 1.90735e-06, -22.8102 )
+transform = Transform( 0.447525, 0, 0.894271, 0, 1, 0, -0.894271, 0, 0.447525, -9.36533, 1.90735e-06, -10.3748 )
 
 [node name="tree05" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 12.4317, 1.90735e-06, -17.2432 )
+transform = Transform( 0.447525, 0, 0.894271, 0, 1, 0, -0.894271, 0, 0.447525, -2.26552, 1.90735e-06, -12.1225 )
 
 [node name="tree07" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 0.163739, 0, -0.986504, 0, 1, 0, 0.986504, 0, 0.163739, -19.1713, 1.90735e-06, -10.601 )
-
-[node name="tree14" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 0.164015, 0, -0.986458, 0, 1, 0, 0.986458, 0, 0.164015, 17.7532, 1.90735e-06, -0.267515 )
+transform = Transform( 0.163739, 0, -0.986504, 0, 1, 0, 0.986504, 0, 0.163739, 5.76286, 3.8147e-06, -13.5516 )
 
 [node name="tree15" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 0.164015, 0, -0.986458, 0, 1, 0, 0.986458, 0, 0.164015, 13.0793, 1.90735e-06, -12.7913 )
-
-[node name="tree16" parent="bg/tree02_fall" instance=ExtResource( 6 )]
-transform = Transform( 0.164015, 0, -0.986458, 0, 1, 0, 0.986458, 0, 0.164015, 20.4436, 3.8147e-06, 2.34812 )
+transform = Transform( 0.164015, 0, -0.986458, 0, 1, 0, 0.986458, 0, 0.164015, 11.6147, 1.90735e-06, -7.52069 )
 
 [node name="tree07_summer" type="Spatial" parent="bg"]
 
 [node name="tree07" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.02656, 0, -21.5555 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.49112, 0, -16.2849 )
 
 [node name="tree08" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.15254, 1.90735e-06, -24.3519 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.687976, 1.90735e-06, -19.0813 )
 
 [node name="tree09" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -15.3855, 0, -19.7577 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -11.4047, 1.90735e-06, -13.4155 )
 
 [node name="tree10" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 8.68259, 0, -18.6093 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.24842, 0, -6.35551 )
 
 [node name="tree11" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, 0.924155, 0, -21.9957 )
+transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, -0.540408, 0, -16.7251 )
 
 [node name="tree12" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, -2.13434, 1.90735e-06, -15.942 )
+transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, -3.5989, 1.90735e-06, -10.6714 )
 
 [node name="tree13" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, 11.7606, 0, -30.1679 )
+transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, 8.79536, 0, -22.2387 )
 
 [node name="tree14" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, -10.8221, 0, -16.3187 )
-
-[node name="tree21" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, 14.0847, 0, 0.857728 )
+transform = Transform( -0.778834, 0, -0.627229, 0, 1, 0, 0.627229, 0, -0.778834, -12.2867, 0, -11.0481 )
 
 [node name="tree23" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.0420849, 0, -0.999114, 0, 1, 0, 0.999114, 0, -0.0420849, -17.0872, 1.90735e-06, -0.228923 )
-
-[node name="tree25" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.0420849, 0, -0.999114, 0, 1, 0, 0.999114, 0, -0.0420849, -16.0846, 1.90735e-06, -13.7644 )
+transform = Transform( -0.0420849, 0, -0.999114, 0, 1, 0, 0.999114, 0, -0.0420849, 11.8079, 3.8147e-06, -16.6508 )
 
 [node name="tree28" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.77742, 0, -0.628981, 0, 1, 0, 0.628981, 0, -0.77742, -14.9554, 3.8147e-06, -5.00857 )
-
-[node name="tree30" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( -0.593896, 0, 0.804541, 0, 1, 0, -0.804541, 0, -0.593896, -22.0334, 1.90735e-06, -7.23882 )
+transform = Transform( -0.77742, 0, -0.628981, 0, 1, 0, 0.628981, 0, -0.77742, 8.27366, 5.72205e-06, -8.19995 )
 
 [node name="tree31" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 0.0487452, 0, 0.998811, 0, 1, 0, -0.998811, 0, 0.0487452, 19.0594, 0, -3.92722 )
+transform = Transform( 0.0487452, 0, 0.998811, 0, 1, 0, -0.998811, 0, 0.0487452, 10.1471, 0, -4.67196 )
 
 [node name="tree32" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 0.0487452, 0, 0.998811, 0, 1, 0, -0.998811, 0, 0.0487452, 16.5675, 1.90735e-06, -10.2353 )
+transform = Transform( -0.871393, 0, 0.490584, 0, 1, 0, -0.490584, 0, -0.871393, -4.68558, 1.90735e-06, -7.8918 )
 
 [node name="tree34" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 0.0487452, 0, 0.998811, 0, 1, 0, -0.998811, 0, 0.0487452, 22.6216, 0, -16.4776 )
+transform = Transform( 0.0487452, 0, 0.998811, 0, 1, 0, -0.998811, 0, 0.0487452, 10.7441, 0, -9.29314 )
 
 [node name="tree35" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 0.588519, 0, -0.808483, 0, 1, 0, 0.808483, 0, 0.588519, 18.861, 0, -8.89351 )
+transform = Transform( 0.588519, 0, -0.808483, 0, 1, 0, 0.808483, 0, 0.588519, 9.94872, 0, -9.63825 )
 
 [node name="tree36" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 0.588519, 0, -0.808483, 0, 1, 0, 0.808483, 0, 0.588519, 24.7584, 1.90735e-06, -5.54356 )
+transform = Transform( 0.588519, 0, -0.808483, 0, 1, 0, 0.808483, 0, 0.588519, -6.06742, 9.53676e-07, -10.9147 )
 
 [node name="tree37" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 0.588519, 0, -0.808483, 0, 1, 0, 0.808483, 0, 0.588519, 11.2267, 0, -20.1154 )
-
-[node name="tree38" parent="bg/tree07_summer" instance=ExtResource( 7 )]
-transform = Transform( 0.588519, 0, -0.808483, 0, 1, 0, 0.808483, 0, 0.588519, 23.9587, 0, 3.11551 )
+transform = Transform( 0.588519, 0, -0.808483, 0, 1, 0, 0.808483, 0, 0.588519, 8.26146, 0, -12.1862 )
 
 [node name="ground" type="MeshInstance" parent="bg"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.79778 )
@@ -280,7 +265,7 @@ transform = Transform( 0.963261, 0, 0.268567, 0, 1, 0, -0.268567, 0, 0.963261, -
 
 [node name="easter_eyes" type="MeshInstance" parent="bg"]
 unique_name_in_owner = true
-transform = Transform( 0.910337, 0, -0.413867, 0, 1, 0, 0.413867, 0, 0.910337, 3.495, 0.8, -8.849 )
+transform = Transform( 0.910337, 0, -0.413867, 0, 1, 0, 0.413867, 0, 0.910337, 3.48808, 0.8, -7.59063 )
 mesh = SubResource( 8 )
 material/0 = SubResource( 9 )
 
@@ -288,6 +273,11 @@ material/0 = SubResource( 9 )
 wait_time = 5.0
 one_shot = true
 autostart = true
+
+[node name="mountains" type="MeshInstance" parent="bg"]
+transform = Transform( 1, 0, 9.53674e-08, 0, 1, 0, -9.53674e-08, 0, 1, -12.135, 0, -25.471 )
+mesh = SubResource( 10 )
+material/0 = SubResource( 11 )
 
 [node name="title" type="Label" parent="."]
 material = SubResource( 4 )
@@ -343,6 +333,50 @@ enabled_focus_mode = 1
 text = "exit"
 flat = true
 
+[node name="bgm_insects" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 16 )
+autoplay = true
+mix_target = 1
+bus = "Insects"
+
+[node name="bgm_wind" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 15 )
+autoplay = true
+mix_target = 1
+bus = "Wind"
+
+[node name="bgm_drone" type="AudioStreamPlayer" parent="."]
+stream = SubResource( 12 )
+autoplay = true
+mix_target = 1
+bus = "Drone"
+
+[node name="level_select" type="GridContainer" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 65.0
+margin_top = 50.0
+margin_right = -65.0
+margin_bottom = -50.0
+theme = ExtResource( 2 )
+custom_constants/vseparation = 5
+custom_constants/hseparation = 5
+columns = 3
+
+[node name="level_debug" type="Button" parent="level_select"]
+margin_right = 74.0
+margin_bottom = 19.0
+text = "Debug Level"
+
+[node name="intro" type="Button" parent="level_select"]
+margin_left = 79.0
+margin_right = 119.0
+margin_bottom = 19.0
+text = "Intro"
+
 [connection signal="timeout" from="bg/easter_eyes/timer" to="." method="_on_eyes_timer_timeout"]
 [connection signal="button_up" from="vbox/start" to="." method="_on_start_button_up"]
 [connection signal="button_up" from="vbox/exit" to="." method="_on_exit_button_up"]
+[connection signal="button_up" from="level_select/level_debug" to="." method="_on_level_select_button_up" binds= [ "level_debug" ]]
+[connection signal="button_up" from="level_select/intro" to="." method="_on_level_select_button_up" binds= [ "intro" ]]

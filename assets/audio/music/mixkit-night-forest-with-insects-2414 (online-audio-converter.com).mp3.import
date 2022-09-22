@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/mixkit-night-forest-with-insects-2414 (online-audio-converter.com).mp3-f54e52124b942fa99b1aba8c0b3ad17d.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/music/mixkit-night-forest-with-insects-2414 (online-audio-converter.com).mp3"
+dest_files=[ "res://.import/mixkit-night-forest-with-insects-2414 (online-audio-converter.com).mp3-f54e52124b942fa99b1aba8c0b3ad17d.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0

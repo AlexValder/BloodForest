@@ -11,3 +11,6 @@ data_*/
 docs/
 build/
 settings.ini
+addons/
+*.kra
+*~

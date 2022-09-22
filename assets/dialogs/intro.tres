@@ -1,0 +1,412 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://addons/dialogue_manager/dialogue_resource.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+resource_version = 22
+syntax_version = 2
+raw_text = "~ intro_dialog
+
+Driver: We are nearly at the destination.
+Driver: I would have never agreed to this trip, if you did not paid everything beforehand.
+Driver: You aren’t... really chatty though. You slept all the way here, covering yourself with a blanket.
+Driver: I was afraid cops will stop me to see if you’re alive. *laughs*
+- [Lie]
+	Gabriel: Ha-ha... Excuse me, I just a really hard week. I barely remember passing out, but I feel better already.
+Driver: Eh, good for you.
+Driver: ...
+Driver: Gabriel, right?
+Gabriel: Yes?
+Driver: Anyway, what are you doing for a living? I would never decide to spend your weekend there just to rest? I’m not even sure it’s opened.
+Gabriel: I...
+- Construction engineer [Lie]
+	Gabriel: I am a construction engineer. Wanted to spend some time far away from city, surrounded by trees and silence.
+	Gabriel: I got a key from the owners, I’m staying at one of the cabins.
+	Driver: To be honest, I imagined you guys to be built togher… No offense. My late uncle was one too, actually. Died from drinking too much. And you don’t have any bags with you...
+	Gabriel: (internally) He did not believe me.
+- Clerk [Lie]
+	Gabriel: I am a clerk at a hotel. Got sick of dealing with customers, wanted to give myself of treat of no other people around for a while...
+	Driver: Ah, so you’re one of those... I see.
+	Gabriel: (internally) That cut it short.
+- Accountant [Lie]
+	Gabriel: I am an accountant. Numbers,  taxes, spreadsheets… all of this. I want nothing of it, but I get paid, and it is not like I can do anything else… So I wanted some time away from all of this.
+	Driver: Well, it’s not too late to change profession, if you’re that sick of it. You’re still young, your whole life is before you, after all. Think about it while you’re here.
+	Gabriel: (internally) He is nice… I almost feel sorry.
+Driver: By the way, we arrived. Have a nice weekend here.
+do quit_to_menu()"
+errors = [  ]
+titles = {
+"intro_dialog": "2"
+}
+lines = {
+"0": {
+"next_id": "2",
+"text": "intro_dialog",
+"type": "title"
+},
+"10": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "11",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "Gabriel, right?",
+"time": null,
+"translation_key": "Gabriel, right?",
+"type": "dialogue"
+},
+"11": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "12",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "Yes?",
+"time": null,
+"translation_key": "Yes?",
+"type": "dialogue"
+},
+"12": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "13",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "Anyway, what are you doing for a living? I would never decide to spend your weekend there just to rest? I’m not even sure it’s opened.",
+"time": null,
+"translation_key": "Anyway, what are you doing for a living? I would never decide to spend your weekend there just to rest? I’m not even sure it’s opened.",
+"type": "dialogue"
+},
+"13": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "14",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "I...",
+"time": null,
+"translation_key": "I...",
+"type": "dialogue"
+},
+"14": {
+"next_id": "15",
+"next_id_after": "27",
+"replacements": [  ],
+"responses": PoolStringArray( "14", "19", "23" ),
+"text": "Construction engineer [Lie]",
+"translation_key": "Construction engineer [Lie]",
+"type": "response"
+},
+"15": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "16",
+"parent_id": "14",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "I am a construction engineer. Wanted to spend some time far away from city, surrounded by trees and silence.",
+"time": null,
+"translation_key": "I am a construction engineer. Wanted to spend some time far away from city, surrounded by trees and silence.",
+"type": "dialogue"
+},
+"16": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "17",
+"parent_id": "14",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "I got a key from the owners, I’m staying at one of the cabins.",
+"time": null,
+"translation_key": "I got a key from the owners, I’m staying at one of the cabins.",
+"type": "dialogue"
+},
+"17": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "18",
+"parent_id": "14",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "To be honest, I imagined you guys to be built togher… No offense. My late uncle was one too, actually. Died from drinking too much. And you don’t have any bags with you...",
+"time": null,
+"translation_key": "To be honest, I imagined you guys to be built togher… No offense. My late uncle was one too, actually. Died from drinking too much. And you don’t have any bags with you...",
+"type": "dialogue"
+},
+"18": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "27",
+"parent_id": "14",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "(internally) He did not believe me.",
+"time": null,
+"translation_key": "(internally) He did not believe me.",
+"type": "dialogue"
+},
+"19": {
+"next_id": "20",
+"next_id_after": "27",
+"replacements": [  ],
+"text": "Clerk [Lie]",
+"translation_key": "Clerk [Lie]",
+"type": "response"
+},
+"2": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "3",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "We are nearly at the destination.",
+"time": null,
+"translation_key": "We are nearly at the destination.",
+"type": "dialogue"
+},
+"20": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "21",
+"parent_id": "19",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "I am a clerk at a hotel. Got sick of dealing with customers, wanted to give myself of treat of no other people around for a while...",
+"time": null,
+"translation_key": "I am a clerk at a hotel. Got sick of dealing with customers, wanted to give myself of treat of no other people around for a while...",
+"type": "dialogue"
+},
+"21": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "22",
+"parent_id": "19",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "Ah, so you’re one of those... I see.",
+"time": null,
+"translation_key": "Ah, so you’re one of those... I see.",
+"type": "dialogue"
+},
+"22": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "27",
+"parent_id": "19",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "(internally) That cut it short.",
+"time": null,
+"translation_key": "(internally) That cut it short.",
+"type": "dialogue"
+},
+"23": {
+"next_id": "24",
+"next_id_after": "27",
+"replacements": [  ],
+"text": "Accountant [Lie]",
+"translation_key": "Accountant [Lie]",
+"type": "response"
+},
+"24": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "25",
+"parent_id": "23",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "I am an accountant. Numbers,  taxes, spreadsheets… all of this. I want nothing of it, but I get paid, and it is not like I can do anything else… So I wanted some time away from all of this.",
+"time": null,
+"translation_key": "I am an accountant. Numbers,  taxes, spreadsheets… all of this. I want nothing of it, but I get paid, and it is not like I can do anything else… So I wanted some time away from all of this.",
+"type": "dialogue"
+},
+"25": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "26",
+"parent_id": "23",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "Well, it’s not too late to change profession, if you’re that sick of it. You’re still young, your whole life is before you, after all. Think about it while you’re here.",
+"time": null,
+"translation_key": "Well, it’s not too late to change profession, if you’re that sick of it. You’re still young, your whole life is before you, after all. Think about it while you’re here.",
+"type": "dialogue"
+},
+"26": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "27",
+"parent_id": "23",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "(internally) He is nice… I almost feel sorry.",
+"time": null,
+"translation_key": "(internally) He is nice… I almost feel sorry.",
+"type": "dialogue"
+},
+"27": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "28",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "By the way, we arrived. Have a nice weekend here.",
+"time": null,
+"translation_key": "By the way, we arrived. Have a nice weekend here.",
+"type": "dialogue"
+},
+"28": {
+"mutation": {
+"expression": [ {
+"function": "quit_to_menu",
+"type": "function",
+"value": [  ]
+} ]
+},
+"next_id": "",
+"type": "mutation"
+},
+"3": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "4",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "I would have never agreed to this trip, if you did not paid everything beforehand.",
+"time": null,
+"translation_key": "I would have never agreed to this trip, if you did not paid everything beforehand.",
+"type": "dialogue"
+},
+"4": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "5",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "You aren’t... really chatty though. You slept all the way here, covering yourself with a blanket.",
+"time": null,
+"translation_key": "You aren’t... really chatty though. You slept all the way here, covering yourself with a blanket.",
+"type": "dialogue"
+},
+"5": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "6",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "I was afraid cops will stop me to see if you’re alive. *laughs*",
+"time": null,
+"translation_key": "I was afraid cops will stop me to see if you’re alive. *laughs*",
+"type": "dialogue"
+},
+"6": {
+"next_id": "7",
+"next_id_after": "8",
+"replacements": [  ],
+"responses": PoolStringArray( "6" ),
+"text": "[Lie]",
+"translation_key": "[Lie]",
+"type": "response"
+},
+"7": {
+"character": "Gabriel",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "8",
+"parent_id": "6",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "Ha-ha... Excuse me, I just a really hard week. I barely remember passing out, but I feel better already.",
+"time": null,
+"translation_key": "Ha-ha... Excuse me, I just a really hard week. I barely remember passing out, but I feel better already.",
+"type": "dialogue"
+},
+"8": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "9",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "Eh, good for you.",
+"time": null,
+"translation_key": "Eh, good for you.",
+"type": "dialogue"
+},
+"9": {
+"character": "Driver",
+"character_replacements": [  ],
+"inline_mutations": [  ],
+"next_id": "10",
+"pauses": {
+},
+"replacements": [  ],
+"speeds": [  ],
+"text": "...",
+"time": null,
+"translation_key": "...",
+"type": "dialogue"
+}
+}

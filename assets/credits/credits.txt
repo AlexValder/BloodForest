@@ -1,6 +1,7 @@
 [Fonts]
 m5x7 by Daniel Linssen (itch.io)
 PixelNewspaperIII by theonewhoboondoggles (Nb Pixel Font Bundle 2 on itch.io)
+Goathe by KreativeKorp
 
 [Models & Textures]
 Retro PSX Nature Pack by Elegant Crow (itch.io)
@@ -8,3 +9,6 @@ PSX Forest Asset Collection by Stark Crafts (itch.io)
 
 [Textures]
 Sinister skybox by vladislavzh (Retro Skyboxes Pack on opengameart.com)
+
+[Music]
+VGM Atmospheric Air by N91Music (itch.io)

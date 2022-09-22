@@ -1,0 +1,23 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/mixkit-wind-blowing-ambience-2658.wav-e1da3605bd9b26e22f6da4e681208df9.sample"
+
+[deps]
+
+source_file="res://assets/audio/music/mixkit-wind-blowing-ambience-2658.wav"
+dest_files=[ "res://.import/mixkit-wind-blowing-ambience-2658.wav-e1da3605bd9b26e22f6da4e681208df9.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

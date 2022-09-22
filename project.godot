@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Resource",
+"class": "DialogueResource",
+"language": "GDScript",
+"path": "res://addons/dialogue_manager/dialogue_resource.gd"
+}, {
 "base": "ResourceFormatLoader",
 "class": "HTerrainDataLoader",
 "language": "GDScript",
@@ -30,6 +35,7 @@ _global_script_classes=[ {
 "path": "res://scenes/player/player_camera.gd"
 } ]
 _global_script_class_icons={
+"DialogueResource": "",
 "HTerrainDataLoader": "",
 "HTerrainDataSaver": "",
 "Player": "",
@@ -42,10 +48,15 @@ config/name="BloodForest"
 run/main_scene="res://scenes/levels/main_menu.tscn"
 config/icon="res://icon.png"
 
+[audio]
+
+default_bus_layout=""
+
 [autoload]
 
 GameManager="*res://scenes/singletons/game_manager.gd"
 Settings="*res://scenes/singletons/settings.gd"
+DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 
 [display]
 
@@ -58,7 +69,7 @@ window/stretch/aspect="keep_height"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/zylann.hterrain/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/dialogue_manager/plugin.cfg" )
 
 [global]
 
