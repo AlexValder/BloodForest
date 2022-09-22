@@ -57,6 +57,7 @@ default_bus_layout=""
 GameManager="*res://scenes/singletons/game_manager.gd"
 Settings="*res://scenes/singletons/settings.gd"
 DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
+SaveData="*res://scenes/singletons/save_data.gd"
 
 [display]
 

@@ -25,7 +25,7 @@ func _ready() -> void:
 
 
 func _load_or_save_settings_file(config: ConfigFile, path: String) -> void:
-    if config.load(SETTINGS_FILE) != OK:
+    if config.load(path) != OK:
         _load_defaults(config, path)
 
     _settings.clear()
