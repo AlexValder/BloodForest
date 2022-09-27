@@ -1,61 +1,23 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://scenes/player/player.tscn" type="PackedScene" id=1]
+[ext_resource path="res://assets/textures/scenery/ground01.png" type="Texture" id=2]
+[ext_resource path="res://assets/textures/scenery/Wood_04.jpg" type="Texture" id=3]
+[ext_resource path="res://scenes/levels/debug_level.gd" type="Script" id=4]
+[ext_resource path="res://addons/interactable/inter_area.gd" type="Script" id=5]
 
 [sub_resource type="CubeMesh" id=1]
 
-[sub_resource type="Shader" id=2]
-code = "// NOTE: Shader automatically converted from Godot Engine 3.5.stable.mono's SpatialMaterial.
-
-shader_type spatial;
-render_mode async_visible,blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
-uniform vec4 albedo : hint_color;
-uniform sampler2D texture_albedo : hint_albedo;
-uniform float specular;
-uniform float metallic;
-uniform float roughness : hint_range(0,1);
-uniform float point_size : hint_range(0,128);
-uniform vec3 uv1_scale;
-uniform vec3 uv1_offset;
-uniform vec3 uv2_scale;
-uniform vec3 uv2_offset;
-
-
-void vertex() {
-	UV=UV*uv1_scale.xy+uv1_offset.xy;
-}
-
-
-
-
-void fragment() {
-	vec2 base_uv = UV;
-	vec4 albedo_tex = texture(texture_albedo,base_uv);
-	albedo_tex *= COLOR;
-	ALBEDO = albedo.rgb * albedo_tex.rgb;
-	METALLIC = metallic;
-	ROUGHNESS = roughness;
-	SPECULAR = specular;
-}
-"
-
-[sub_resource type="ShaderMaterial" id=3]
-shader = SubResource( 2 )
-shader_param/albedo = Color( 0.329412, 0.294118, 0.294118, 1 )
-shader_param/specular = 0.5
-shader_param/metallic = 0.0
-shader_param/roughness = 1.0
-shader_param/point_size = 1.0
-shader_param/uv1_scale = Vector3( 1, 1, 1 )
-shader_param/uv1_offset = Vector3( 0, 0, 0 )
-shader_param/uv2_scale = Vector3( 1, 1, 1 )
-shader_param/uv2_offset = Vector3( 0, 0, 0 )
+[sub_resource type="SpatialMaterial" id=10]
+albedo_texture = ExtResource( 2 )
+uv1_scale = Vector3( 10, 10, 10 )
 
 [sub_resource type="ConcavePolygonShape" id=4]
 data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1 )
 
 [sub_resource type="SpatialMaterial" id=5]
-albedo_color = Color( 0.2, 0.87451, 0.121569, 1 )
+albedo_texture = ExtResource( 3 )
+uv1_scale = Vector3( 8, 2, 1 )
 
 [sub_resource type="ConcavePolygonShape" id=6]
 data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1 )
@@ -69,12 +31,90 @@ data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1
 [sub_resource type="ConcavePolygonShape" id=9]
 data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1 )
 
+[sub_resource type="OpenSimplexNoise" id=11]
+octaves = 5
+period = 8.0
+persistence = 1.0
+lacunarity = 2.05
+
+[sub_resource type="NoiseTexture" id=12]
+width = 64
+height = 64
+seamless = true
+noise = SubResource( 11 )
+
+[sub_resource type="SpatialMaterial" id=13]
+albedo_color = Color( 0.560784, 0.560784, 0.560784, 1 )
+albedo_texture = SubResource( 12 )
+
+[sub_resource type="CylinderMesh" id=14]
+material = SubResource( 13 )
+top_radius = 0.5
+bottom_radius = 0.8
+height = 1.0
+radial_segments = 8
+rings = 1
+
+[sub_resource type="ConcavePolygonShape" id=15]
+data = PoolVector3Array( 0, 0.5, 0.5, 0.3536, 0.5, 0.3536, 0, 0, 0.65, 0.3536, 0.5, 0.3536, 0.4596, 0, 0.4596, 0, 0, 0.65, 0.3536, 0.5, 0.3536, 0.5, 0.5, 0, 0.4596, 0, 0.4596, 0.5, 0.5, 0, 0.65, 0, 0, 0.4596, 0, 0.4596, 0.5, 0.5, 0, 0.3536, 0.5, -0.3536, 0.65, 0, 0, 0.3536, 0.5, -0.3536, 0.4596, 0, -0.4596, 0.65, 0, 0, 0.3536, 0.5, -0.3536, 0, 0.5, -0.5, 0.4596, 0, -0.4596, 0, 0.5, -0.5, 0, 0, -0.65, 0.4596, 0, -0.4596, 0, 0.5, -0.5, -0.3536, 0.5, -0.3536, 0, 0, -0.65, -0.3536, 0.5, -0.3536, -0.4596, 0, -0.4596, 0, 0, -0.65, -0.3536, 0.5, -0.3536, -0.5, 0.5, 0, -0.4596, 0, -0.4596, -0.5, 0.5, 0, -0.65, 0, 0, -0.4596, 0, -0.4596, -0.5, 0.5, 0, -0.3536, 0.5, 0.3536, -0.65, 0, 0, -0.3536, 0.5, 0.3536, -0.4596, 0, 0.4596, -0.65, 0, 0, -0.3536, 0.5, 0.3536, 0, 0.5, 0.5, -0.4596, 0, 0.4596, 0, 0.5, 0.5, 0, 0, 0.65, -0.4596, 0, 0.4596, 0, 0, 0.65, 0.4596, 0, 0.4596, 0, -0.5, 0.8, 0.4596, 0, 0.4596, 0.5657, -0.5, 0.5657, 0, -0.5, 0.8, 0.4596, 0, 0.4596, 0.65, 0, 0, 0.5657, -0.5, 0.5657, 0.65, 0, 0, 0.8, -0.5, 0, 0.5657, -0.5, 0.5657, 0.65, 0, 0, 0.4596, 0, -0.4596, 0.8, -0.5, 0, 0.4596, 0, -0.4596, 0.5657, -0.5, -0.5657, 0.8, -0.5, 0, 0.4596, 0, -0.4596, 0, 0, -0.65, 0.5657, -0.5, -0.5657, 0, 0, -0.65, 0, -0.5, -0.8, 0.5657, -0.5, -0.5657, 0, 0, -0.65, -0.4596, 0, -0.4596, 0, -0.5, -0.8, -0.4596, 0, -0.4596, -0.5657, -0.5, -0.5657, 0, -0.5, -0.8, -0.4596, 0, -0.4596, -0.65, 0, 0, -0.5657, -0.5, -0.5657, -0.65, 0, 0, -0.8, -0.5, 0, -0.5657, -0.5, -0.5657, -0.65, 0, 0, -0.4596, 0, 0.4596, -0.8, -0.5, 0, -0.4596, 0, 0.4596, -0.5657, -0.5, 0.5657, -0.8, -0.5, 0, -0.4596, 0, 0.4596, 0, 0, 0.65, -0.5657, -0.5, 0.5657, 0, 0, 0.65, 0, -0.5, 0.8, -0.5657, -0.5, 0.5657, 0, 0.5, 0, 0.3536, 0.5, 0.3536, 0, 0.5, 0.5, 0, 0.5, 0, 0.5, 0.5, 0, 0.3536, 0.5, 0.3536, 0, 0.5, 0, 0.3536, 0.5, -0.3536, 0.5, 0.5, 0, 0, 0.5, 0, 0, 0.5, -0.5, 0.3536, 0.5, -0.3536, 0, 0.5, 0, -0.3536, 0.5, -0.3536, 0, 0.5, -0.5, 0, 0.5, 0, -0.5, 0.5, 0, -0.3536, 0.5, -0.3536, 0, 0.5, 0, -0.3536, 0.5, 0.3536, -0.5, 0.5, 0, 0, 0.5, 0, 0, 0.5, 0.5, -0.3536, 0.5, 0.3536, 0, -0.5, 0, 0, -0.5, 0.8, 0.5657, -0.5, 0.5657, 0, -0.5, 0, 0.5657, -0.5, 0.5657, 0.8, -0.5, 0, 0, -0.5, 0, 0.8, -0.5, 0, 0.5657, -0.5, -0.5657, 0, -0.5, 0, 0.5657, -0.5, -0.5657, 0, -0.5, -0.8, 0, -0.5, 0, 0, -0.5, -0.8, -0.5657, -0.5, -0.5657, 0, -0.5, 0, -0.5657, -0.5, -0.5657, -0.8, -0.5, 0, 0, -0.5, 0, -0.8, -0.5, 0, -0.5657, -0.5, 0.5657, 0, -0.5, 0, -0.5657, -0.5, 0.5657, 0, -0.5, 0.8 )
+
+[sub_resource type="OpenSimplexNoise" id=16]
+period = 4.0
+persistence = 0.589
+lacunarity = 1.96
+
+[sub_resource type="NoiseTexture" id=20]
+width = 64
+height = 64
+seamless = true
+noise = SubResource( 16 )
+
+[sub_resource type="SpatialMaterial" id=21]
+flags_vertex_lighting = true
+albedo_color = Color( 0.886275, 0.141176, 0.0156863, 1 )
+albedo_texture = SubResource( 20 )
+
+[sub_resource type="SphereMesh" id=19]
+material = SubResource( 21 )
+radius = 0.3
+height = 0.6
+radial_segments = 6
+rings = 3
+
+[sub_resource type="SphereShape" id=22]
+radius = 0.295664
+
+[sub_resource type="SpatialMaterial" id=23]
+flags_vertex_lighting = true
+albedo_color = Color( 0.368627, 0.87451, 0.0862745, 1 )
+albedo_texture = SubResource( 20 )
+
+[sub_resource type="SphereMesh" id=24]
+material = SubResource( 23 )
+radius = 0.3
+height = 0.6
+radial_segments = 6
+rings = 3
+
+[sub_resource type="SpatialMaterial" id=25]
+flags_vertex_lighting = true
+albedo_color = Color( 0.231373, 0.376471, 0.945098, 1 )
+albedo_texture = SubResource( 20 )
+
+[sub_resource type="SphereMesh" id=26]
+material = SubResource( 25 )
+radius = 0.3
+height = 0.6
+radial_segments = 6
+rings = 3
+
 [node name="debug_level" type="Spatial"]
+script = ExtResource( 4 )
 
 [node name="floor" type="MeshInstance" parent="."]
 transform = Transform( 10, 0, 0, 0, 0.05, 0, 0, 0, 10, 0, 0, 0 )
 mesh = SubResource( 1 )
-material/0 = SubResource( 3 )
+material/0 = SubResource( 10 )
 
 [node name="StaticBody" type="StaticBody" parent="floor"]
 
@@ -122,3 +162,82 @@ material/0 = SubResource( 5 )
 shape = SubResource( 9 )
 
 [node name="player" parent="." instance=ExtResource( 1 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0 )
+
+[node name="pedestal1" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.292, 0.5, -5.509 )
+mesh = SubResource( 14 )
+
+[node name="StaticBody" type="StaticBody" parent="pedestal1"]
+
+[node name="CollisionShape" type="CollisionShape" parent="pedestal1/StaticBody"]
+shape = SubResource( 15 )
+
+[node name="orb" type="MeshInstance" parent="pedestal1"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
+mesh = SubResource( 19 )
+
+[node name="area" type="Area" parent="pedestal1/orb"]
+collision_layer = 2
+collision_mask = 2
+monitoring = false
+script = ExtResource( 5 )
+title = "red_orb"
+type = 1
+
+[node name="shape" type="CollisionShape" parent="pedestal1/orb/area"]
+shape = SubResource( 22 )
+
+[node name="pedestal2" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.195436, 0.5, -5.509 )
+mesh = SubResource( 14 )
+
+[node name="StaticBody" type="StaticBody" parent="pedestal2"]
+
+[node name="CollisionShape" type="CollisionShape" parent="pedestal2/StaticBody"]
+shape = SubResource( 15 )
+
+[node name="orb" type="MeshInstance" parent="pedestal2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
+mesh = SubResource( 24 )
+
+[node name="area" type="Area" parent="pedestal2/orb"]
+collision_layer = 2
+collision_mask = 2
+monitoring = false
+script = ExtResource( 5 )
+title = "green_orb"
+type = 1
+
+[node name="shape" type="CollisionShape" parent="pedestal2/orb/area"]
+shape = SubResource( 22 )
+
+[node name="pedestal3" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.70812, 0.5, -5.509 )
+mesh = SubResource( 14 )
+
+[node name="StaticBody" type="StaticBody" parent="pedestal3"]
+
+[node name="CollisionShape" type="CollisionShape" parent="pedestal3/StaticBody"]
+shape = SubResource( 15 )
+
+[node name="orb" type="MeshInstance" parent="pedestal3"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
+mesh = SubResource( 26 )
+
+[node name="area" type="Area" parent="pedestal3/orb"]
+collision_layer = 2
+collision_mask = 2
+monitoring = false
+script = ExtResource( 5 )
+title = "blue_orb"
+type = 1
+
+[node name="shape" type="CollisionShape" parent="pedestal3/orb/area"]
+shape = SubResource( 22 )
+
+[connection signal="interacted" from="pedestal1/orb/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="pedestal2/orb/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="pedestal3/orb/area" to="." method="_on_area_interacted"]
+
+[editable path="player"]

@@ -10,6 +10,8 @@ const ACCEL := 40.0
 const GRAVITY := -160
 
 onready var _camera := $player_camera as PlayerCamera
+onready var _ray := $player_camera/arm as RayCast
+onready var _crosshair := $"%crosshair" as ColorRect
 var _velocity := Vector3.ZERO
 var _snap_vector := Vector3.DOWN
 
@@ -26,8 +28,20 @@ func _unhandled_input(event: InputEvent) -> void:
         rotation.y -= event.relative.x * mouse_sensitivity
         rotation.y = wrapf(rotation.y, 0, 2*PI)
 
+    if event.is_action_released("interact"):
+        var obj := _ray.get_collider() as InterArea
+        if obj != null:
+            obj.ray_interacted()
+
 
 func _physics_process(delta: float) -> void:
+    if _ray.get_collider() != null:
+        # TODO: icon change
+        _crosshair.color = Color.white
+    else:
+        _crosshair.color = Color.gray
+
+
     var look_dir := Input.get_vector("look_left", "look_right", "look_up", "look_down")
     _camera.rotation.x -= look_dir.y * joy_sensitivity
     _camera.rotation.x = clamp(_camera.rotation.x, -PI/2, PI/6)

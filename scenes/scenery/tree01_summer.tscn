@@ -17,6 +17,9 @@ surfaces/0 = {
 }
 
 [sub_resource type="SpatialMaterial" id=3]
+flags_vertex_lighting = true
+params_diffuse_mode = 4
+params_specular_mode = 3
 params_use_alpha_scissor = true
 params_alpha_scissor_threshold = 0.98
 albedo_texture = ExtResource( 1 )
@@ -38,10 +41,12 @@ surfaces/0 = {
 [node name="tree01" type="Spatial"]
 
 [node name="tree01" type="MeshInstance" parent="."]
+use_in_baked_light = true
 mesh = SubResource( 1 )
 material/0 = SubResource( 3 )
 
 [node name="tree01_top" type="MeshInstance" parent="tree01"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0.001 )
+use_in_baked_light = true
 mesh = SubResource( 2 )
 material/0 = SubResource( 3 )

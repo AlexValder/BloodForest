@@ -7,6 +7,8 @@ onready var _levels := {
    }
 var _game_started := false
 
+signal object_interacted(title)
+
 
 func _ready() -> void:
     OS.window_maximized = true

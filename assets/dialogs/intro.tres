@@ -51,56 +51,36 @@ lines = {
 "10": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "11",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "Gabriel, right?",
-"time": null,
 "translation_key": "Gabriel, right?",
 "type": "dialogue"
 },
 "11": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "12",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "Yes?",
-"time": null,
 "translation_key": "Yes?",
 "type": "dialogue"
 },
 "12": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "13",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "Anyway, what are you doing for a living? I would never decide to spend my weekend there just to rest... I’m not even sure it’s opened.",
-"time": null,
 "translation_key": "Anyway, what are you doing for a living? I would never decide to spend my weekend there just to rest... I’m not even sure it’s opened.",
 "type": "dialogue"
 },
 "13": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "14",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "I...",
-"time": null,
 "translation_key": "I...",
 "type": "dialogue"
 },
@@ -143,74 +123,49 @@ lines = {
 "16": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "17",
 "parent_id": "14",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "I am a construction engineer. Wanted to spend some time far away from city, surrounded by trees and silence.",
-"time": null,
 "translation_key": "I am a construction engineer. Wanted to spend some time far away from city, surrounded by trees and silence.",
 "type": "dialogue"
 },
 "17": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "18",
 "parent_id": "14",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "I got a key from the owners, I’m staying at one of the cabins.",
-"time": null,
 "translation_key": "I got a key from the owners, I’m staying at one of the cabins.",
 "type": "dialogue"
 },
 "18": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "19",
 "parent_id": "14",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "To be honest, I imagined you guys to be built togher… No offense. My late uncle was one too, actually. Died from drinking too much. And you don’t have any bags with you...",
-"time": null,
 "translation_key": "To be honest, I imagined you guys to be built togher… No offense. My late uncle was one too, actually. Died from drinking too much. And you don’t have any bags with you...",
 "type": "dialogue"
 },
 "19": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "30",
 "parent_id": "14",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "(internally) He did not believe me.",
-"time": null,
 "translation_key": "(internally) He did not believe me.",
 "type": "dialogue"
 },
 "2": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "3",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "We are nearly at the destination.",
-"time": null,
 "translation_key": "We are nearly at the destination.",
 "type": "dialogue"
 },
@@ -252,45 +207,30 @@ lines = {
 "22": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "23",
 "parent_id": "20",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "I am a clerk at a hotel. Got sick of dealing with customers, wanted to give myself of treat of no other people around for a while...",
-"time": null,
 "translation_key": "I am a clerk at a hotel. Got sick of dealing with customers, wanted to give myself of treat of no other people around for a while...",
 "type": "dialogue"
 },
 "23": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "24",
 "parent_id": "20",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "Ah, so you’re one of those... I see.",
-"time": null,
 "translation_key": "Ah, so you’re one of those... I see.",
 "type": "dialogue"
 },
 "24": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "30",
 "parent_id": "20",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "(internally) That cut it short.",
-"time": null,
 "translation_key": "(internally) That cut it short.",
 "type": "dialogue"
 },
@@ -332,73 +272,48 @@ lines = {
 "27": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "28",
 "parent_id": "25",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "I am an accountant. Numbers,  taxes, spreadsheets… all of this. I want nothing of it, but I get paid, and it is not like I can do anything else… So I wanted some time away from all of this.",
-"time": null,
 "translation_key": "I am an accountant. Numbers,  taxes, spreadsheets… all of this. I want nothing of it, but I get paid, and it is not like I can do anything else… So I wanted some time away from all of this.",
 "type": "dialogue"
 },
 "28": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "29",
 "parent_id": "25",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "Well, it’s not too late to change profession, if you’re that sick of it. You’re still young, your whole life is before you, after all. Think about it while you’re here.",
-"time": null,
 "translation_key": "Well, it’s not too late to change profession, if you’re that sick of it. You’re still young, your whole life is before you, after all. Think about it while you’re here.",
 "type": "dialogue"
 },
 "29": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "30",
 "parent_id": "25",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "(internally) He is nice… I almost feel sorry.",
-"time": null,
 "translation_key": "(internally) He is nice… I almost feel sorry.",
 "type": "dialogue"
 },
 "3": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "4",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "I would have never agreed to this trip, if you did not paid everything beforehand.",
-"time": null,
 "translation_key": "I would have never agreed to this trip, if you did not paid everything beforehand.",
 "type": "dialogue"
 },
 "30": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "31",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "By the way, we arrived. Have a nice weekend here.",
-"time": null,
 "translation_key": "By the way, we arrived. Have a nice weekend here.",
 "type": "dialogue"
 },
@@ -416,28 +331,18 @@ lines = {
 "4": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "5",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "You aren’t... really chatty though. You slept all the way here, covering yourself with a blanket.",
-"time": null,
 "translation_key": "You aren’t... really chatty though. You slept all the way here, covering yourself with a blanket.",
 "type": "dialogue"
 },
 "5": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "6",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "I was afraid cops will stop me to see if you’re alive. *laughs*",
-"time": null,
 "translation_key": "I was afraid cops will stop me to see if you’re alive. *laughs*",
 "type": "dialogue"
 },
@@ -453,43 +358,28 @@ lines = {
 "7": {
 "character": "Gabriel",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "8",
 "parent_id": "6",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "Ha-ha... Excuse me, I just a really hard week. I barely remember passing out, but I feel better already.",
-"time": null,
 "translation_key": "Ha-ha... Excuse me, I just a really hard week. I barely remember passing out, but I feel better already.",
 "type": "dialogue"
 },
 "8": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "9",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "Eh, good for you.",
-"time": null,
 "translation_key": "Eh, good for you.",
 "type": "dialogue"
 },
 "9": {
 "character": "Driver",
 "character_replacements": [  ],
-"inline_mutations": [  ],
 "next_id": "10",
-"pauses": {
-},
 "replacements": [  ],
-"speeds": [  ],
 "text": "...",
-"time": null,
 "translation_key": "...",
 "type": "dialogue"
 }

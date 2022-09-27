@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://scenes/levels/main_menu.gd" type="Script" id=1]
 [ext_resource path="res://assets/gui/default.tres" type="Theme" id=2]
@@ -12,10 +12,12 @@
 [ext_resource path="res://scenes/scenery/grass02_summer.tscn" type="PackedScene" id=10]
 [ext_resource path="res://scenes/scenery/grass03_summer.tscn" type="PackedScene" id=11]
 [ext_resource path="res://scenes/scenery/bush06_summer.tscn" type="PackedScene" id=12]
-[ext_resource path="res://assets/textures/scenery/easter_egg.png" type="Texture" id=13]
+[ext_resource path="res://scenes/items/axe.tscn" type="PackedScene" id=13]
 [ext_resource path="res://assets/textures/scenery/mountains_bg.png" type="Texture" id=14]
 [ext_resource path="res://assets/audio/music/vgm-atmospheric-air.mp3" type="AudioStream" id=15]
 [ext_resource path="res://assets/audio/music/mixkit-night-forest-with-insects-2414 (online-audio-converter.com).mp3" type="AudioStream" id=16]
+[ext_resource path="res://scenes/scenery/tree_small.tscn" type="PackedScene" id=17]
+[ext_resource path="res://scenes/scenery/tree_normal05.tscn" type="PackedScene" id=18]
 
 [sub_resource type="PlaneMesh" id=6]
 size = Vector2( 20, 20 )
@@ -24,16 +26,6 @@ size = Vector2( 20, 20 )
 albedo_texture = ExtResource( 8 )
 uv1_scale = Vector3( 10, 10, 10 )
 
-[sub_resource type="QuadMesh" id=8]
-size = Vector2( 0.3, 0.3 )
-
-[sub_resource type="SpatialMaterial" id=9]
-flags_transparent = true
-flags_unshaded = true
-vertex_color_use_as_albedo = true
-params_billboard_mode = 1
-albedo_texture = ExtResource( 13 )
-
 [sub_resource type="QuadMesh" id=10]
 size = Vector2( 70, 25 )
 
@@ -41,6 +33,18 @@ size = Vector2( 70, 25 )
 flags_transparent = true
 params_billboard_mode = 1
 albedo_texture = ExtResource( 14 )
+
+[sub_resource type="SpatialMaterial" id=13]
+flags_unshaded = true
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+params_billboard_mode = 2
+params_billboard_keep_scale = true
+albedo_color = Color( 0.901961, 0.964706, 0.160784, 1 )
+
+[sub_resource type="QuadMesh" id=14]
+material = SubResource( 13 )
+size = Vector2( 0.2, 0.3 )
 
 [sub_resource type="Shader" id=5]
 code = "shader_type canvas_item;
@@ -66,18 +70,22 @@ audio_stream = ExtResource( 15 )
 [node name="root" type="Node"]
 script = ExtResource( 1 )
 
-[node name="camera" type="Camera" parent="."]
-transform = Transform( 0.707107, 0.194905, 0.679715, 0, 0.961262, -0.275637, -0.707107, 0.194905, 0.679715, 0.0681044, 0.472061, 0.0523945 )
+[node name="bg" type="Spatial" parent="."]
+transform = Transform( 0.789631, 0, 0.613582, 0, 1, 0, -0.613582, 0, 0.789631, 0, 0, 0 )
+
+[node name="camera" type="Camera" parent="bg"]
+transform = Transform( 0.992221, 0.0343128, 0.119663, 0, 0.961262, -0.275637, -0.124485, 0.273493, 0.953784, 0.021629, 0.472061, 0.08316 )
 environment = ExtResource( 5 )
 current = true
 fov = 50.0
 far = 50.0
 
-[node name="bg" type="Spatial" parent="."]
-transform = Transform( 0.789631, 0, 0.613582, 0, 1, 0, -0.613582, 0, 0.789631, 0, 0, 0 )
-
 [node name="central_tree" parent="bg" instance=ExtResource( 4 )]
 transform = Transform( 0.975989, 0, -0.21782, 0, 1, 0, 0.21782, 0, 0.975989, 0.32957, 0, -4.7589 )
+
+[node name="axe" parent="bg/central_tree" instance=ExtResource( 13 )]
+transform = Transform( -0.0148814, -0.0264391, -0.0104467, -0.000653031, 0.0699648, -0.0162465, 0.00819253, -0.0424488, -0.0202711, 0.234153, 0.517572, 0.36423 )
+use_in_baked_light = true
 
 [node name="tree01_summer" type="Spatial" parent="bg"]
 
@@ -178,106 +186,124 @@ mesh = SubResource( 6 )
 material/0 = SubResource( 7 )
 
 [node name="grass01" type="Spatial" parent="bg"]
-transform = Transform( 0.996502, 0, 0.0835735, 0, 1, 0, -0.0835735, 0, 0.996502, 0, 0, 0 )
+transform = Transform( 0.498251, 0, 0.0417867, 0, 0.5, 0, -0.0417867, 0, 0.498251, -0.120124, 0, -0.946141 )
 
 [node name="grass01" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( 1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, 1, 0.0970398, 0, -2.46286 )
+transform = Transform( 0.975176, 0, 0.221429, 0, 1, 0, -0.221429, 0, 0.975176, 1.29249, 0, -1.02807 )
 
 [node name="grass02" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( -0.704622, 0, 0.709583, 0, 1, 0, -0.709583, 0, -0.704622, -0.826043, 0, -2.85218 )
+transform = Transform( -0.844253, 0, 0.535945, 0, 1, 0, -0.535945, 0, -0.844253, -0.877467, 0, -1.41362 )
 
 [node name="grass03" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( 0.580248, 0, 0.81444, 0, 1, 0, -0.81444, 0, 0.580248, 0.222979, 0, -3.82605 )
+transform = Transform( 0.385503, 0, 0.922706, 0, 1, 0, -0.922706, 0, 0.385503, 0.898623, 0, -4.0139 )
 
 [node name="grass04" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( -0.234684, 0, 0.972072, 0, 1, 0, -0.972072, 0, -0.234684, 0.880766, -2.38419e-07, -3.13982 )
+transform = Transform( -0.444104, 0, 0.895975, 0, 1, 0, -0.895975, 0, -0.444104, 2.64407, -2.38419e-07, -2.86214 )
 
 [node name="grass05" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( -0.737643, 0, 0.675191, 0, 1, 0, -0.675191, 0, -0.737643, -1.70974, -2.38419e-07, -3.60613 )
+transform = Transform( -0.868839, 0, 0.495094, 0, 1, 0, -0.495094, 0, -0.868839, -3.14055, -2.38419e-07, -2.60061 )
 
 [node name="grass06" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( -0.737643, 0, 0.675191, 0, 1, 0, -0.675191, 0, -0.737643, -1.31274, -2.38419e-07, -2.24249 )
+transform = Transform( -0.868839, 0, 0.495094, 0, 1, 0, -0.495094, 0, -0.868839, -1.62459, -2.38419e-07, 0.131444 )
 
 [node name="grass07" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( 0.0860084, 0, 0.996294, 0, 1, 0, -0.996294, 0, 0.0860084, 0.667736, -1.19209e-07, -4.76061 )
+transform = Transform( -0.516398, 0, 0.856348, 0, 1, 0, -0.856348, 0, -0.516398, 2.4351, -1.19209e-07, -6.08726 )
 
 [node name="grass08" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( 0.999999, 0, 0.00141338, 0, 1, 0, -0.00141338, 0, 0.999999, 2.03115, -1.19209e-07, -3.41682 )
+transform = Transform( 0.974862, 0, 0.222807, 0, 1, 0, -0.222807, 0, 0.974862, 4.97708, -1.19209e-07, -4.01678 )
 
 [node name="grass09" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( 0.870399, 0, 0.492347, 0, 1, 0, -0.492347, 0, 0.870399, -1.26209, -3.57628e-07, -5.45409 )
+transform = Transform( 0.739772, 0, 0.672857, 0, 1, 0, -0.672857, 0, 0.739772, -3.0804, -3.57628e-07, -6.78315 )
 
 [node name="grass10" parent="bg/grass01" instance=ExtResource( 9 )]
-transform = Transform( -0.173751, 0, 0.984789, 0, 1, 0, -0.984789, 0, -0.173751, -2.0108, -3.57628e-07, -4.01715 )
+transform = Transform( -0.387499, 0, 0.92187, 0, 1, 0, -0.92187, 0, -0.387499, -3.98665, -3.57628e-07, -3.33573 )
 
 [node name="grass02" type="Spatial" parent="bg"]
-transform = Transform( 0.996502, 0, 0.0835735, 0, 1, 0, -0.0835735, 0, 0.996502, 0, 0, 0 )
+transform = Transform( 0.996502, 0, 0.0835735, 0, 1, 0, -0.0835735, 0, 0.996502, 0.576276, 0, -0.813897 )
 
 [node name="grass01" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.530141, 0, -0.847909, 0, 1, 0, 0.847909, 0, 0.530141, -1.54759, 0, -0.980238 )
+transform = Transform( 0.265071, 0, -0.423955, 0, 0.5, 0, 0.423955, 0, 0.265071, -1.54759, 0, -0.980238 )
 
 [node name="grass02" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.561159, 0, 0.827708, 0, 1, 0, -0.827708, 0, 0.561159, -2.44241, 0, -1.98161 )
+transform = Transform( 0.28058, 0, 0.413854, 0, 0.5, 0, -0.413854, 0, 0.28058, -2.44241, 0, -1.98161 )
 
 [node name="grass03" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.969999, 0, -0.243107, 0, 1, 0, 0.243107, 0, 0.969999, 1.2241, 0, -1.50617 )
+transform = Transform( 0.485, 0, -0.121554, 0, 0.5, 0, 0.121554, 0, 0.485, 1.2241, 0, -1.50617 )
 
 [node name="grass04" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( -0.728586, 0, -0.684954, 0, 1, 0, 0.684954, 0, -0.728586, -2.61966, 0, -3.2086 )
+transform = Transform( -0.364293, 0, -0.342477, 0, 0.5, 0, 0.342477, 0, -0.364293, -2.61966, 0, -3.2086 )
 
 [node name="grass05" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.073395, 0, 0.997303, 0, 1, 0, -0.997303, 0, 0.073395, 0.576504, 0, -0.57682 )
+transform = Transform( 0.0366975, 0, 0.498651, 0, 0.5, 0, -0.498651, 0, 0.0366975, 0.576504, 0, -0.57682 )
 
 [node name="grass06" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.348278, 0, -0.937392, 0, 1, 0, 0.937392, 0, 0.348278, 1.27348, 0, -2.8912 )
+transform = Transform( 0.174139, 0, -0.468696, 0, 0.5, 0, 0.468696, 0, 0.174139, 1.27348, 0, -2.8912 )
 
 [node name="grass07" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.859273, 0, 0.511518, 0, 1, 0, -0.511518, 0, 0.859273, 0.841559, 0, -2.46053 )
+transform = Transform( 0.429636, 0, 0.255759, 0, 0.5, 0, -0.255759, 0, 0.429636, 0.841559, 0, -2.46053 )
 
 [node name="grass08" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.49608, 0, -0.868277, 0, 1, 0, 0.868277, 0, 0.49608, -0.647799, -5.96046e-08, -3.84882 )
+transform = Transform( 0.24804, 0, -0.434138, 0, 0.5, 0, 0.434138, 0, 0.24804, -0.647799, -5.96046e-08, -3.84882 )
 
 [node name="grass09" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 0.588138, 0, 0.80876, 0, 1, 0, -0.80876, 0, 0.588138, 0.439963, 0, -1.29472 )
+transform = Transform( 0.294069, 0, 0.40438, 0, 0.5, 0, -0.40438, 0, 0.294069, 0.439963, 0, -1.29472 )
 
 [node name="grass10" parent="bg/grass02" instance=ExtResource( 10 )]
-transform = Transform( 1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, 1, -0.701953, 5.96046e-08, -1.95459 )
+transform = Transform( 0.5, 0, -1.49011e-08, 0, 0.5, 0, 1.49011e-08, 0, 0.5, -0.701953, 5.96046e-08, -1.95459 )
 
 [node name="grass03" type="Spatial" parent="bg"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.46248, 0, -1.04968 )
 
 [node name="grass01" parent="bg/grass03" instance=ExtResource( 11 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.490851, -5.96046e-08, -2.08515 )
+transform = Transform( -0.497592, 0, 0.0490172, 0, 0.5, 0, -0.0490172, 0, -0.497592, -1.48442, -2.98023e-07, -3.19049 )
 
 [node name="grass02" parent="bg/grass03" instance=ExtResource( 11 )]
-transform = Transform( 0.244817, 0, -0.969569, 0, 1, 0, 0.969569, 0, 0.244817, 0.769309, -5.96046e-08, -2.12089 )
+transform = Transform( -0.0742933, 0, 0.49445, 0, 0.5, 0, -0.49445, 0, -0.0742933, -3.61338, -2.98023e-07, -3.33942 )
 
 [node name="grass03" parent="bg/grass03" instance=ExtResource( 11 )]
-transform = Transform( -0.955705, 0, -0.294324, 0, 1, 0, 0.294324, 0, -0.955705, -0.674523, 0.0265648, -3.36692 )
+transform = Transform( 0.489978, 0, 0.0996073, 0, 0.5, 0, -0.0996073, 0, 0.489978, -1.38771, 0.0265646, -1.00057 )
 
 [node name="grass04" parent="bg/grass03" instance=ExtResource( 11 )]
-transform = Transform( -0.931202, 0, 0.364503, 0, 1, 0, -0.364503, 0, -0.931202, -2.48279, 0.0265648, -3.07923 )
+transform = Transform( 0.445491, 0, -0.227019, 0, 0.5, 0, 0.227019, 0, 0.445491, 1.72431, 0.0265646, -2.60046 )
 
 [node name="grass05" parent="bg/grass03" instance=ExtResource( 11 )]
-transform = Transform( -0.931202, 0, 0.364503, 0, 1, 0, -0.364503, 0, -0.931202, -1.0004, 0.0265648, -1.29107 )
+transform = Transform( 0.445491, 0, -0.227019, 0, 0.5, 0, 0.227019, 0, 0.445491, -0.494182, 0.0265646, -4.44374 )
 
 [node name="bush06" parent="bg" instance=ExtResource( 12 )]
-transform = Transform( 0.963261, 0, 0.268567, 0, 1, 0, -0.268567, 0, 0.963261, -3.03983, 0, -4.87044 )
-
-[node name="easter_eyes" type="MeshInstance" parent="bg"]
-unique_name_in_owner = true
-transform = Transform( 0.910337, 0, -0.413867, 0, 1, 0, 0.413867, 0, 0.910337, 3.48808, 0.8, -7.59063 )
-mesh = SubResource( 8 )
-material/0 = SubResource( 9 )
-
-[node name="timer" type="Timer" parent="bg/easter_eyes"]
-wait_time = 5.0
-one_shot = true
-autostart = true
+transform = Transform( 0.865484, 0, 0.500937, 0, 1, 0, -0.500937, 0, 0.865484, -3.03983, 0, -4.87044 )
 
 [node name="mountains" type="MeshInstance" parent="bg"]
-transform = Transform( 1, 0, 9.53674e-08, 0, 1, 0, -9.53674e-08, 0, 1, -12.135, 0, -25.471 )
+transform = Transform( 1, 0, 5.96046e-08, 0, 1, 0, -5.96046e-08, 0, 1, -12.135, 0, -25.471 )
 mesh = SubResource( 10 )
 material/0 = SubResource( 11 )
+
+[node name="tree_small" parent="bg" instance=ExtResource( 17 )]
+transform = Transform( 22.9813, -19.2836, -8.42914e-07, 0, -1.31134e-06, 30, -19.2836, -22.9813, -1.00455e-06, 2.185, 0, -6.145 )
+use_in_baked_light = true
+skeleton = NodePath("")
+
+[node name="tree_normal05" parent="bg" instance=ExtResource( 18 )]
+transform = Transform( 60, 3.8147e-06, 2.27374e-13, 0, -2.62268e-06, 60, 3.8147e-06, -60, -2.62268e-06, -5.17342, 1.54574, -12.1108 )
+use_in_baked_light = true
+
+[node name="window" type="Spatial" parent="bg"]
+transform = Transform( 0.6, 0, 0, 0, 0.6, 0, 0, 0, 1, -2.599, 1, -10.878 )
+
+[node name="quad1" type="MeshInstance" parent="bg/window"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.2, 0 )
+mesh = SubResource( 14 )
+
+[node name="quad2" type="MeshInstance" parent="bg/window"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.2, 0 )
+mesh = SubResource( 14 )
+
+[node name="quad3" type="MeshInstance" parent="bg/window"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.2, 0 )
+mesh = SubResource( 14 )
+
+[node name="quad4" type="MeshInstance" parent="bg/window"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.2, 0 )
+mesh = SubResource( 14 )
 
 [node name="title" type="Label" parent="."]
 material = SubResource( 4 )
@@ -337,19 +363,16 @@ flat = true
 stream = ExtResource( 16 )
 autoplay = true
 mix_target = 1
-bus = "Insects"
 
 [node name="bgm_wind" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 15 )
 autoplay = true
 mix_target = 1
-bus = "Wind"
 
 [node name="bgm_drone" type="AudioStreamPlayer" parent="."]
 stream = SubResource( 12 )
 autoplay = true
 mix_target = 1
-bus = "Drone"
 
 [node name="level_select" type="GridContainer" parent="."]
 visible = false
@@ -375,7 +398,6 @@ margin_right = 119.0
 margin_bottom = 19.0
 text = "Intro"
 
-[connection signal="timeout" from="bg/easter_eyes/timer" to="." method="_on_eyes_timer_timeout"]
 [connection signal="button_up" from="vbox/start" to="." method="_on_start_button_up"]
 [connection signal="button_up" from="vbox/exit" to="." method="_on_exit_button_up"]
 [connection signal="button_up" from="level_select/level_debug" to="." method="_on_level_select_button_up" binds= [ "level_debug" ]]

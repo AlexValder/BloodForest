@@ -1,0 +1,66 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://addons/dialogue_manager/dialogue_resource.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+resource_version = 4
+syntax_version = 2
+raw_text = "~ red_orb
+
+This is a RED orb.
+
+~ blue_orb
+
+This is a BLUE orb.
+
+~ green_orb
+
+This is a GREEN orb."
+errors = [  ]
+titles = {
+"blue_orb": "6",
+"green_orb": "10",
+"red_orb": "2"
+}
+lines = {
+"0": {
+"next_id": "2",
+"text": "red_orb",
+"type": "title"
+},
+"10": {
+"character": "",
+"next_id": "",
+"replacements": [  ],
+"text": "This is a GREEN orb.",
+"translation_key": "This is a GREEN orb.",
+"type": "dialogue"
+},
+"2": {
+"character": "",
+"next_id": "",
+"replacements": [  ],
+"text": "This is a RED orb.",
+"translation_key": "This is a RED orb.",
+"type": "dialogue"
+},
+"4": {
+"next_id": "6",
+"text": "blue_orb",
+"type": "title"
+},
+"6": {
+"character": "",
+"next_id": "",
+"replacements": [  ],
+"text": "This is a BLUE orb.",
+"translation_key": "This is a BLUE orb.",
+"type": "dialogue"
+},
+"8": {
+"next_id": "10",
+"text": "green_orb",
+"type": "title"
+}
+}

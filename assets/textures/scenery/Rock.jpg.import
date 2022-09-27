@@ -2,8 +2,8 @@
 
 importer="texture"
 type="StreamTexture"
-path.s3tc="res://.import/easter_egg.png-121639624a117dff942ec467e5a301b9.s3tc.stex"
-path.etc2="res://.import/easter_egg.png-121639624a117dff942ec467e5a301b9.etc2.stex"
+path.s3tc="res://.import/Rock.jpg-8a8aafd20f30896f25b540e537b88e10.s3tc.stex"
+path.etc2="res://.import/Rock.jpg-8a8aafd20f30896f25b540e537b88e10.etc2.stex"
 metadata={
 "imported_formats": [ "s3tc", "etc2" ],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://assets/textures/scenery/easter_egg.png"
-dest_files=[ "res://.import/easter_egg.png-121639624a117dff942ec467e5a301b9.s3tc.stex", "res://.import/easter_egg.png-121639624a117dff942ec467e5a301b9.etc2.stex" ]
+source_file="res://assets/textures/scenery/Rock.jpg"
+dest_files=[ "res://.import/Rock.jpg-8a8aafd20f30896f25b540e537b88e10.s3tc.stex", "res://.import/Rock.jpg-8a8aafd20f30896f25b540e537b88e10.etc2.stex" ]
 
 [params]
 
@@ -21,11 +21,11 @@ compress/lossy_quality=0.7
 compress/hdr_mode=0
 compress/bptc_ldr=0
 compress/normal_map=0
-flags/repeat=true
+flags/repeat=0
 flags/filter=true
-flags/mipmaps=true
+flags/mipmaps=false
 flags/anisotropic=false
-flags/srgb=1
+flags/srgb=2
 process/fix_alpha_border=true
 process/premult_alpha=false
 process/HDR_as_SRGB=false
@@ -33,5 +33,5 @@ process/invert_color=false
 process/normal_map_invert_y=false
 stream=false
 size_limit=0
-detect_3d=false
+detect_3d=true
 svg/scale=1.0

@@ -38,10 +38,12 @@ surfaces/0 = {
 [node name="tree02" type="Spatial"]
 
 [node name="tree02" type="MeshInstance" parent="."]
+use_in_baked_light = true
 mesh = SubResource( 1 )
 material/0 = SubResource( 3 )
 
 [node name="tree02_top" type="MeshInstance" parent="tree02"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0 )
+use_in_baked_light = true
 mesh = SubResource( 2 )
 material/0 = SubResource( 3 )

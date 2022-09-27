@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://scenes/player/player.gd" type="Script" id=1]
 [ext_resource path="res://scenes/player/player_camera.gd" type="Script" id=2]
 [ext_resource path="res://assets/player_env.tres" type="Environment" id=3]
+[ext_resource path="res://assets/gui/default.tres" type="Theme" id=4]
 
 [sub_resource type="CylinderShape" id=3]
 margin = 0.5
@@ -26,6 +27,13 @@ transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 1.8,
 environment = ExtResource( 3 )
 script = ExtResource( 2 )
 
+[node name="arm" type="RayCast" parent="player_camera"]
+transform = Transform( 1, -8.74228e-08, 8.74228e-08, 8.74228e-08, -4.37114e-08, -1, 8.74228e-08, 1, -4.37114e-08, 0, 0, 0 )
+enabled = true
+cast_to = Vector3( 0, -2.5, 0 )
+collision_mask = 2
+collide_with_areas = true
+
 [node name="shape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 1.9, 0, 0, 0, 1, 0, 0.95, 0 )
 shape = SubResource( 3 )
@@ -33,6 +41,7 @@ shape = SubResource( 3 )
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="crosshair" type="ColorRect" parent="HUD"]
+unique_name_in_owner = true
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -48,4 +57,5 @@ margin_left = 10.0
 margin_top = 10.0
 margin_right = 40.0
 margin_bottom = 14.0
+theme = ExtResource( 4 )
 script = SubResource( 2 )
