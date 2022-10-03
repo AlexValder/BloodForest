@@ -57,7 +57,8 @@ func _save_state() -> void:
     var file := File.new()
     var dir := Directory.new()
     if !dir.dir_exists(SAVES_DIR):
-        dir.make_dir_recursive(SAVES_DIR)
+        var err := dir.make_dir_recursive(SAVES_DIR)
+        assert(err == OK)
 
     var error := file.open(SAVES_FILE, File.WRITE_READ)
     if error != OK:
