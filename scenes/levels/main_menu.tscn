@@ -387,7 +387,7 @@ custom_constants/vseparation = 5
 custom_constants/hseparation = 5
 columns = 3
 
-[node name="level_debug" type="Button" parent="level_select"]
+[node name="debug_level" type="Button" parent="level_select"]
 margin_right = 74.0
 margin_bottom = 19.0
 text = "Debug Level"
@@ -400,5 +400,5 @@ text = "Intro"
 
 [connection signal="button_up" from="vbox/start" to="." method="_on_start_button_up"]
 [connection signal="button_up" from="vbox/exit" to="." method="_on_exit_button_up"]
-[connection signal="button_up" from="level_select/level_debug" to="." method="_on_level_select_button_up" binds= [ "level_debug" ]]
+[connection signal="button_up" from="level_select/debug_level" to="." method="_on_level_select_button_up" binds= [ "debug_level" ]]
 [connection signal="button_up" from="level_select/intro" to="." method="_on_level_select_button_up" binds= [ "intro" ]]

@@ -1,10 +1,11 @@
 extends Node
 
-onready var _levels := {
-    "main_menu" : load("res://scenes/levels/main_menu.tscn"),
-    "level_debug" : load("res://scenes/levels/debug_level.tscn"),
-    "intro": load("res://scenes/levels/intro.tscn"),
-   }
+const PREFIX := "res://scenes/levels/"
+onready var _levels := [
+    "main_menu",
+    "debug_level",
+    "intro",
+   ]
 var _game_started := false
 
 signal object_interacted(title)
@@ -15,7 +16,7 @@ func _ready() -> void:
 
 
 func start_game() -> void:
-    load_level("level_debug")
+    load_level("debug_level")
 
 
 func load_level(name: String) -> void:
@@ -24,14 +25,25 @@ func load_level(name: String) -> void:
         return
 
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-    get_tree().change_scene_to(_levels[name])
+    _change_current_scene(name)
     _game_started = true
 
 
 func quit_to_menu() -> void:
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-    get_tree().change_scene_to(_levels["main_menu"])
+    _change_current_scene("main_menu")
     _game_started = false
+
+
+func _change_current_scene(name: String) -> void:
+    var curr_scene := get_tree().current_scene
+    get_tree().change_scene_to(_get_level(name))
+    curr_scene.queue_free()
+
+
+func _get_level(name: String) -> PackedScene:
+    var path := PREFIX + name + ".tscn"
+    return load(path) as PackedScene
 
 
 func _unhandled_input(event: InputEvent) -> void:

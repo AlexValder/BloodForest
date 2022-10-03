@@ -11,10 +11,15 @@ const GRAVITY := -160
 
 onready var _camera := $player_camera as PlayerCamera
 onready var _ray := $player_camera/arm as RayCast
-onready var _crosshair := $"%crosshair" as ColorRect
+onready var _crosshair := $"%crosshair" as TextureRect
 var _velocity := Vector3.ZERO
 var _snap_vector := Vector3.DOWN
 
+onready var _icons := {
+    "dot" : preload("res://assets/gui/hud/dot_icon.png"),
+    "hand" : preload("res://assets/gui/hud/hand_icon.png"),
+    "eye" : preload("res://assets/gui/hud/eye_icon.png"),
+}
 
 func _speed() -> float:
     return RUN_SPEED if Input.is_action_pressed("run") else WALK_SPEED
@@ -35,12 +40,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
-    if _ray.get_collider() != null:
-        # TODO: icon change
-        _crosshair.color = Color.white
-    else:
-        _crosshair.color = Color.gray
-
+    var collider := _ray.get_collider()
+    _process_collision(collider)
 
     var look_dir := Input.get_vector("look_left", "look_right", "look_up", "look_down")
     _camera.rotation.x -= look_dir.y * joy_sensitivity
@@ -58,3 +59,20 @@ func _physics_process(delta: float) -> void:
     _velocity.y = GRAVITY * delta
 
     _velocity = move_and_slide_with_snap(_velocity, _snap_vector)
+
+
+func _process_collision(coll: InterArea) -> void:
+    if coll == null:
+        _crosshair.texture = _icons["dot"]
+        _crosshair.self_modulate = Color.gray
+        return
+
+    _crosshair.self_modulate = Color.white
+    match (coll.type):
+        1:
+            _crosshair.texture = _icons["eye"]
+        2:
+            _crosshair.texture = _icons["hand"]
+        _:
+            _crosshair.texture = _icons["dot"]
+            push_warning("Unknown interactable type")

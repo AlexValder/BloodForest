@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://scenes/player/player.gd" type="Script" id=1]
 [ext_resource path="res://scenes/player/player_camera.gd" type="Script" id=2]
 [ext_resource path="res://assets/player_env.tres" type="Environment" id=3]
 [ext_resource path="res://assets/gui/default.tres" type="Theme" id=4]
+[ext_resource path="res://assets/gui/hud/dot_icon.png" type="Texture" id=5]
 
 [sub_resource type="CylinderShape" id=3]
 margin = 0.5
@@ -40,17 +41,21 @@ shape = SubResource( 3 )
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
-[node name="crosshair" type="ColorRect" parent="HUD"]
+[node name="crosshair" type="TextureRect" parent="HUD"]
 unique_name_in_owner = true
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -1.0
-margin_top = -1.0
-margin_right = 1.0
-margin_bottom = 1.0
+margin_left = -4.0
+margin_top = -4.0
+margin_right = 4.0
+margin_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource( 5 )
+stretch_mode = 6
 
 [node name="debug_fps" type="Label" parent="HUD"]
 margin_left = 10.0
