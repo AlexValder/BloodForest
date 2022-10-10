@@ -28,6 +28,7 @@ resource_name = "Amplify"
 volume_db = 2.0
 
 [resource]
+bus/0/volume_db = -10.0692
 bus/1/name = "Drone"
 bus/1/solo = false
 bus/1/mute = false

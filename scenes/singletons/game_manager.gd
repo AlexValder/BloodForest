@@ -3,7 +3,9 @@ extends Node
 const PREFIX := "res://scenes/levels/"
 
 onready var _pause_menu :=\
-    preload("res://scenes/gui/pause_menu.tscn").instance() as Node
+    preload("res://scenes/gui/pause_menu.tscn").instance() as PauseMenu
+onready var _load_screen :=\
+    preload("res://scenes/gui/loading.tscn").instance() as LoadingScreen
 
 var _levels := [
     "main_menu",
@@ -15,6 +17,8 @@ var _game_started := false
 
 func _ready() -> void:
     OS.window_maximized = true
+
+    add_child(_load_screen)
 
 
 func start_game() -> void:
@@ -51,15 +55,22 @@ func quit_to_menu() -> void:
     _game_started = false
 
 
-func _change_current_scene(name: String) -> void:
+func _change_current_scene(name: String, quick: bool = false) -> void:
     var curr_scene := get_tree().current_scene
-    var error := get_tree().change_scene_to(_get_level(name))
-    assert(error == OK)
+    if quick:
+        var error := get_tree().change_scene_to(_get_level(name))
+        assert(error == OK)
+    else:
+        _load_screen.load_scene(_get_level_name(name))
     curr_scene.queue_free()
 
 
+func _get_level_name(name: String) -> String:
+    return PREFIX + name + ".tscn"
+
+
 func _get_level(name: String) -> PackedScene:
-    var path := PREFIX + name + ".tscn"
+    var path := _get_level_name(name)
     return load(path) as PackedScene
 
 

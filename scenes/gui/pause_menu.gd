@@ -1,4 +1,5 @@
 extends CanvasLayer
+class_name PauseMenu
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -12,7 +13,8 @@ func _on_resume_button_up() -> void:
 
 
 func _on_restart_button_up() -> void:
-    get_tree().reload_current_scene()
+    var error := get_tree().reload_current_scene()
+    assert(error == OK)
     GameManager.set_pause(false)
 
 

@@ -64,3 +64,5 @@ margin_right = 40.0
 margin_bottom = 14.0
 theme = ExtResource( 4 )
 script = SubResource( 2 )
+
+[node name="tween" type="Tween" parent="."]

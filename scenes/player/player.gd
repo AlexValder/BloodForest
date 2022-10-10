@@ -4,6 +4,7 @@ extends KinematicBody
 export var mouse_sensitivity := 0.001
 export var joy_sensitivity := 0.01
 
+const DUCK_SPEED := 2.5
 const WALK_SPEED := 4.0
 const RUN_SPEED := 6.0
 const ACCEL := 40.0
@@ -12,8 +13,10 @@ const GRAVITY := -160
 onready var _camera := $player_camera as PlayerCamera
 onready var _ray := $player_camera/arm as RayCast
 onready var _crosshair := $"%crosshair" as TextureRect
+onready var _tween := $tween as Tween
 var _velocity := Vector3.ZERO
 var _snap_vector := Vector3.DOWN
+var _ducking := false
 
 onready var _icons := {
     "dot" : preload("res://assets/gui/hud/dot_icon.png"),
@@ -21,12 +24,19 @@ onready var _icons := {
     "eye" : preload("res://assets/gui/hud/eye_icon.png"),
 }
 
+
 func _speed() -> float:
-    return RUN_SPEED if Input.is_action_pressed("run") else WALK_SPEED
+    if _ducking:
+        return DUCK_SPEED
+    if Input.is_action_pressed("run"):
+        return RUN_SPEED
+    return WALK_SPEED
 
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion:
+        get_tree().set_input_as_handled()
+
         _camera.rotation.x -= event.relative.y * mouse_sensitivity
         _camera.rotation.x = clamp(_camera.rotation.x, -PI/2, PI/6)
 
@@ -34,9 +44,25 @@ func _unhandled_input(event: InputEvent) -> void:
         rotation.y = wrapf(rotation.y, 0, 2*PI)
 
     if event.is_action_released("interact"):
+        get_tree().set_input_as_handled()
+
         var obj := _ray.get_collider() as InterArea
         if obj != null:
             obj.ray_interacted()
+
+    if event.is_action_pressed("duck"):
+        _tween_ducking(true)
+    elif event.is_action_released("duck"):
+        _tween_ducking(false)
+
+
+func _tween_ducking(ducking: bool) -> void:
+    _ducking = ducking
+    get_tree().set_input_as_handled()
+    _tween.stop_all()
+    _tween.interpolate_property(
+        self, "scale:y", null, 0.5 if ducking else 1.0, 0.3)
+    _tween.start()
 
 
 func _physics_process(delta: float) -> void:

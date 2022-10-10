@@ -1,8 +1,8 @@
-[gd_scene load_steps=31 format=2]
+[gd_scene load_steps=32 format=2]
 
 [ext_resource path="res://scenes/player/player.tscn" type="PackedScene" id=1]
-[ext_resource path="res://assets/textures/scenery/ground01.png" type="Texture" id=2]
-[ext_resource path="res://assets/textures/scenery/Wood_04.jpg" type="Texture" id=3]
+[ext_resource path="res://assets/textures/scenery/plain_textures/ground01.png" type="Texture" id=2]
+[ext_resource path="res://assets/textures/scenery/plain_textures/Rock.jpg" type="Texture" id=3]
 [ext_resource path="res://scenes/levels/debug_level.gd" type="Script" id=4]
 [ext_resource path="res://addons/interactable/inter_area.gd" type="Script" id=5]
 
@@ -16,6 +16,8 @@ uv1_scale = Vector3( 10, 10, 10 )
 data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1 )
 
 [sub_resource type="SpatialMaterial" id=5]
+flags_vertex_lighting = true
+albedo_color = Color( 0.800781, 0.800781, 0.800781, 1 )
 albedo_texture = ExtResource( 3 )
 uv1_scale = Vector3( 8, 2, 1 )
 
@@ -127,6 +129,9 @@ radius = 0.2
 height = 0.4
 radial_segments = 4
 rings = 1
+
+[sub_resource type="ConcavePolygonShape" id=30]
+data = PoolVector3Array( 0, 0.6, 0.3, 0.2121, 0.6, 0.2121, 0, 0, 0.4, 0.2121, 0.6, 0.2121, 0.2828, 0, 0.2828, 0, 0, 0.4, 0.2121, 0.6, 0.2121, 0.3, 0.6, 0, 0.2828, 0, 0.2828, 0.3, 0.6, 0, 0.4, 0, 0, 0.2828, 0, 0.2828, 0.3, 0.6, 0, 0.2121, 0.6, -0.2121, 0.4, 0, 0, 0.2121, 0.6, -0.2121, 0.2828, 0, -0.2828, 0.4, 0, 0, 0.2121, 0.6, -0.2121, 0, 0.6, -0.3, 0.2828, 0, -0.2828, 0, 0.6, -0.3, 0, 0, -0.4, 0.2828, 0, -0.2828, 0, 0.6, -0.3, -0.2121, 0.6, -0.2121, 0, 0, -0.4, -0.2121, 0.6, -0.2121, -0.2828, 0, -0.2828, 0, 0, -0.4, -0.2121, 0.6, -0.2121, -0.3, 0.6, 0, -0.2828, 0, -0.2828, -0.3, 0.6, 0, -0.4, 0, 0, -0.2828, 0, -0.2828, -0.3, 0.6, 0, -0.2121, 0.6, 0.2121, -0.4, 0, 0, -0.2121, 0.6, 0.2121, -0.2828, 0, 0.2828, -0.4, 0, 0, -0.2121, 0.6, 0.2121, 0, 0.6, 0.3, -0.2828, 0, 0.2828, 0, 0.6, 0.3, 0, 0, 0.4, -0.2828, 0, 0.2828, 0, 0, 0.4, 0.2828, 0, 0.2828, 0, -0.6, 0.5, 0.2828, 0, 0.2828, 0.3536, -0.6, 0.3536, 0, -0.6, 0.5, 0.2828, 0, 0.2828, 0.4, 0, 0, 0.3536, -0.6, 0.3536, 0.4, 0, 0, 0.5, -0.6, 0, 0.3536, -0.6, 0.3536, 0.4, 0, 0, 0.2828, 0, -0.2828, 0.5, -0.6, 0, 0.2828, 0, -0.2828, 0.3536, -0.6, -0.3536, 0.5, -0.6, 0, 0.2828, 0, -0.2828, 0, 0, -0.4, 0.3536, -0.6, -0.3536, 0, 0, -0.4, 0, -0.6, -0.5, 0.3536, -0.6, -0.3536, 0, 0, -0.4, -0.2828, 0, -0.2828, 0, -0.6, -0.5, -0.2828, 0, -0.2828, -0.3536, -0.6, -0.3536, 0, -0.6, -0.5, -0.2828, 0, -0.2828, -0.4, 0, 0, -0.3536, -0.6, -0.3536, -0.4, 0, 0, -0.5, -0.6, 0, -0.3536, -0.6, -0.3536, -0.4, 0, 0, -0.2828, 0, 0.2828, -0.5, -0.6, 0, -0.2828, 0, 0.2828, -0.3536, -0.6, 0.3536, -0.5, -0.6, 0, -0.2828, 0, 0.2828, 0, 0, 0.4, -0.3536, -0.6, 0.3536, 0, 0, 0.4, 0, -0.6, 0.5, -0.3536, -0.6, 0.3536, 0, 0.6, 0, 0.2121, 0.6, 0.2121, 0, 0.6, 0.3, 0, 0.6, 0, 0.3, 0.6, 0, 0.2121, 0.6, 0.2121, 0, 0.6, 0, 0.2121, 0.6, -0.2121, 0.3, 0.6, 0, 0, 0.6, 0, 0, 0.6, -0.3, 0.2121, 0.6, -0.2121, 0, 0.6, 0, -0.2121, 0.6, -0.2121, 0, 0.6, -0.3, 0, 0.6, 0, -0.3, 0.6, 0, -0.2121, 0.6, -0.2121, 0, 0.6, 0, -0.2121, 0.6, 0.2121, -0.3, 0.6, 0, 0, 0.6, 0, 0, 0.6, 0.3, -0.2121, 0.6, 0.2121, 0, -0.6, 0, 0, -0.6, 0.5, 0.3536, -0.6, 0.3536, 0, -0.6, 0, 0.3536, -0.6, 0.3536, 0.5, -0.6, 0, 0, -0.6, 0, 0.5, -0.6, 0, 0.3536, -0.6, -0.3536, 0, -0.6, 0, 0.3536, -0.6, -0.3536, 0, -0.6, -0.5, 0, -0.6, 0, 0, -0.6, -0.5, -0.3536, -0.6, -0.3536, 0, -0.6, 0, -0.3536, -0.6, -0.3536, -0.5, -0.6, 0, 0, -0.6, 0, -0.5, -0.6, 0, -0.3536, -0.6, 0.3536, 0, -0.6, 0, -0.3536, -0.6, 0.3536, 0, -0.6, 0.5 )
 
 [node name="debug_level" type="Spatial"]
 script = ExtResource( 4 )
@@ -260,11 +265,6 @@ shape = SubResource( 22 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.10562, 0.5, -7.30361 )
 mesh = SubResource( 27 )
 
-[node name="StaticBody" type="StaticBody" parent="pedestal4"]
-
-[node name="CollisionShape" type="CollisionShape" parent="pedestal4/StaticBody"]
-shape = SubResource( 15 )
-
 [node name="orb" type="MeshInstance" parent="pedestal4"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.38419e-07, 1.0221, 0 )
 mesh = SubResource( 29 )
@@ -279,6 +279,11 @@ type = 2
 
 [node name="shape" type="CollisionShape" parent="pedestal4/orb/area"]
 shape = SubResource( 22 )
+
+[node name="StaticBody" type="StaticBody" parent="pedestal4"]
+
+[node name="CollisionShape" type="CollisionShape" parent="pedestal4/StaticBody"]
+shape = SubResource( 30 )
 
 [connection signal="interacted" from="pedestal1/orb/area" to="." method="_on_area_interacted"]
 [connection signal="interacted" from="pedestal2/orb/area" to="." method="_on_area_interacted"]

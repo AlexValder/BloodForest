@@ -19,5 +19,5 @@ surfaces/0 = {
 }
 
 [node name="sleeping_bag" type="MeshInstance"]
-transform = Transform( -8.10681e-09, 0, 0.185462, 0, 0.185462, 0, -0.185462, 0, -8.10681e-09, 0.851461, 0.100727, 0.0164084 )
+transform = Transform( -8.10681e-09, 0, 0.185462, 0, 0.185462, 0, -0.185462, 0, -8.10681e-09, 0, 0, 0 )
 mesh = SubResource( 32 )
