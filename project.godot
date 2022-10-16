@@ -19,25 +19,25 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/dialogue_manager/dialogue_resource.gd"
 }, {
-"base": "ResourceFormatLoader",
-"class": "HTerrainDataLoader",
-"language": "GDScript",
-"path": "res://addons/zylann.hterrain/hterrain_resource_loader.gd"
-}, {
-"base": "ResourceFormatSaver",
-"class": "HTerrainDataSaver",
-"language": "GDScript",
-"path": "res://addons/zylann.hterrain/hterrain_resource_saver.gd"
-}, {
 "base": "Area",
 "class": "InterArea",
 "language": "GDScript",
 "path": "res://addons/interactable/inter_area.gd"
 }, {
 "base": "Control",
+"class": "Inventory",
+"language": "GDScript",
+"path": "res://scenes/gui/inventory.gd"
+}, {
+"base": "Control",
 "class": "LoadingScreen",
 "language": "GDScript",
 "path": "res://scenes/gui/loading.gd"
+}, {
+"base": "Node",
+"class": "MainMenu",
+"language": "GDScript",
+"path": "res://scenes/levels/main_menu.gd"
 }, {
 "base": "CanvasLayer",
 "class": "PauseMenu",
@@ -57,10 +57,10 @@ _global_script_classes=[ {
 _global_script_class_icons={
 "DescBalloon": "",
 "DialogueResource": "",
-"HTerrainDataLoader": "",
-"HTerrainDataSaver": "",
 "InterArea": "",
+"Inventory": "",
 "LoadingScreen": "",
+"MainMenu": "",
 "PauseMenu": "",
 "Player": "",
 "PlayerCamera": ""
@@ -82,6 +82,7 @@ GameManager="*res://scenes/singletons/game_manager.gd"
 Settings="*res://scenes/singletons/settings.gd"
 DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 SaveData="*res://scenes/singletons/save_data.gd"
+Database="*res://scenes/singletons/db_wrapper.gd"
 
 [display]
 
@@ -94,7 +95,7 @@ window/stretch/aspect="keep_height"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Todo_Manager/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/interactable/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Todo_Manager/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/godot-sqlite/plugin.cfg", "res://addons/interactable/plugin.cfg" )
 
 [global]
 
@@ -176,6 +177,12 @@ duck={
 "deadzone": 0.51,
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777238,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
 , Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":4,"pressure":0.0,"pressed":false,"script":null)
+ ]
+}
+inventory={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777218,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":10,"pressure":0.0,"pressed":false,"script":null)
  ]
 }
 

@@ -6,18 +6,30 @@ onready var _player := $player as Player
 var _in_dialog := false
 
 
-func _on_area_interacted(title: String, type: int) -> void:
+func _ready() -> void:
+    Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _on_area_interacted(obj: InterArea, title: String, type: int) -> void:
     if _in_dialog:
         return
     _in_dialog = true
 
     match (type):
+        0: # NONE
+            pass
         1: # TEXT
             _show_description(title)
         2: # ACTION
+            # TODO
             # there needs to be some way to call a specific function that
             # corresponds to the "title" and isn't just a runtime dictionary
-            # with function refs <-- TODO
+            # with function refs
+            _in_dialog = false
+        3: # PICKUP
+            print("Picked up %s" % title)
+            _player.pick_up(obj.model.filename)
+            obj.queue_free()
             _in_dialog = false
         _:
             _in_dialog = false

@@ -13,6 +13,7 @@ var _levels := [
     "intro",
    ]
 var _game_started := false
+var loading := false
 
 
 func _ready() -> void:
@@ -33,10 +34,8 @@ func set_pause(paused: bool) -> void:
     var root := get_tree().root
     if paused:
         root.add_child(_pause_menu)
-        Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     else:
         root.remove_child(_pause_menu)
-        Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func load_level(name: String) -> void:
@@ -44,24 +43,18 @@ func load_level(name: String) -> void:
         push_error("Unknown level name: %s" % name)
         return
 
-    Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _change_current_scene(name)
     _game_started = true
 
 
 func quit_to_menu() -> void:
-    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-    _change_current_scene("main_menu")
+    _change_current_scene("main_menu", true)
     _game_started = false
 
 
 func _change_current_scene(name: String, quick: bool = false) -> void:
     var curr_scene := get_tree().current_scene
-    if quick:
-        var error := get_tree().change_scene_to(_get_level(name))
-        assert(error == OK)
-    else:
-        _load_screen.load_scene(_get_level_name(name))
+    _load_screen.load_scene(_get_level_name(name), !quick)
     curr_scene.queue_free()
 
 
@@ -76,7 +69,6 @@ func _get_level(name: String) -> PackedScene:
 
 func _unhandled_input(event: InputEvent) -> void:
     if event.is_action_released("pause"):
-        if _game_started:
+        get_tree().set_input_as_handled()
+        if _game_started && !loading:
             set_pause(true)
-        else:
-            get_tree().quit(0)

@@ -45,7 +45,7 @@ func _load_defaults(config: ConfigFile, path: String) -> void:
         for key in DEFAULTS[section]:
             config.set_value(section, key, DEFAULTS[section][key])
     var err := config.save(path)
-    assert(err == OK)
+    assert(err == OK, "Failed to save config file")
 
 
 func _apply_settings(dict: Dictionary) -> void:

@@ -1,10 +1,13 @@
-[gd_scene load_steps=32 format=2]
+[gd_scene load_steps=36 format=2]
 
 [ext_resource path="res://scenes/player/player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://assets/textures/scenery/plain_textures/ground01.png" type="Texture" id=2]
 [ext_resource path="res://assets/textures/scenery/plain_textures/Rock.jpg" type="Texture" id=3]
 [ext_resource path="res://scenes/levels/debug_level.gd" type="Script" id=4]
 [ext_resource path="res://addons/interactable/inter_area.gd" type="Script" id=5]
+[ext_resource path="res://scenes/items/hunting_rifle.tscn" type="PackedScene" id=6]
+[ext_resource path="res://scenes/items/water_bottle.tscn" type="PackedScene" id=7]
+[ext_resource path="res://scenes/items/lighter.tscn" type="PackedScene" id=8]
 
 [sub_resource type="CubeMesh" id=1]
 
@@ -118,20 +121,17 @@ height = 1.2
 radial_segments = 8
 rings = 1
 
-[sub_resource type="SpatialMaterial" id=28]
-flags_vertex_lighting = true
-albedo_color = Color( 1, 0.533333, 0.807843, 1 )
-albedo_texture = SubResource( 20 )
-
-[sub_resource type="SphereMesh" id=29]
-material = SubResource( 28 )
-radius = 0.2
-height = 0.4
-radial_segments = 4
-rings = 1
+[sub_resource type="BoxShape" id=31]
+extents = Vector3( 1.79621, 0.0831335, 0.257108 )
 
 [sub_resource type="ConcavePolygonShape" id=30]
 data = PoolVector3Array( 0, 0.6, 0.3, 0.2121, 0.6, 0.2121, 0, 0, 0.4, 0.2121, 0.6, 0.2121, 0.2828, 0, 0.2828, 0, 0, 0.4, 0.2121, 0.6, 0.2121, 0.3, 0.6, 0, 0.2828, 0, 0.2828, 0.3, 0.6, 0, 0.4, 0, 0, 0.2828, 0, 0.2828, 0.3, 0.6, 0, 0.2121, 0.6, -0.2121, 0.4, 0, 0, 0.2121, 0.6, -0.2121, 0.2828, 0, -0.2828, 0.4, 0, 0, 0.2121, 0.6, -0.2121, 0, 0.6, -0.3, 0.2828, 0, -0.2828, 0, 0.6, -0.3, 0, 0, -0.4, 0.2828, 0, -0.2828, 0, 0.6, -0.3, -0.2121, 0.6, -0.2121, 0, 0, -0.4, -0.2121, 0.6, -0.2121, -0.2828, 0, -0.2828, 0, 0, -0.4, -0.2121, 0.6, -0.2121, -0.3, 0.6, 0, -0.2828, 0, -0.2828, -0.3, 0.6, 0, -0.4, 0, 0, -0.2828, 0, -0.2828, -0.3, 0.6, 0, -0.2121, 0.6, 0.2121, -0.4, 0, 0, -0.2121, 0.6, 0.2121, -0.2828, 0, 0.2828, -0.4, 0, 0, -0.2121, 0.6, 0.2121, 0, 0.6, 0.3, -0.2828, 0, 0.2828, 0, 0.6, 0.3, 0, 0, 0.4, -0.2828, 0, 0.2828, 0, 0, 0.4, 0.2828, 0, 0.2828, 0, -0.6, 0.5, 0.2828, 0, 0.2828, 0.3536, -0.6, 0.3536, 0, -0.6, 0.5, 0.2828, 0, 0.2828, 0.4, 0, 0, 0.3536, -0.6, 0.3536, 0.4, 0, 0, 0.5, -0.6, 0, 0.3536, -0.6, 0.3536, 0.4, 0, 0, 0.2828, 0, -0.2828, 0.5, -0.6, 0, 0.2828, 0, -0.2828, 0.3536, -0.6, -0.3536, 0.5, -0.6, 0, 0.2828, 0, -0.2828, 0, 0, -0.4, 0.3536, -0.6, -0.3536, 0, 0, -0.4, 0, -0.6, -0.5, 0.3536, -0.6, -0.3536, 0, 0, -0.4, -0.2828, 0, -0.2828, 0, -0.6, -0.5, -0.2828, 0, -0.2828, -0.3536, -0.6, -0.3536, 0, -0.6, -0.5, -0.2828, 0, -0.2828, -0.4, 0, 0, -0.3536, -0.6, -0.3536, -0.4, 0, 0, -0.5, -0.6, 0, -0.3536, -0.6, -0.3536, -0.4, 0, 0, -0.2828, 0, 0.2828, -0.5, -0.6, 0, -0.2828, 0, 0.2828, -0.3536, -0.6, 0.3536, -0.5, -0.6, 0, -0.2828, 0, 0.2828, 0, 0, 0.4, -0.3536, -0.6, 0.3536, 0, 0, 0.4, 0, -0.6, 0.5, -0.3536, -0.6, 0.3536, 0, 0.6, 0, 0.2121, 0.6, 0.2121, 0, 0.6, 0.3, 0, 0.6, 0, 0.3, 0.6, 0, 0.2121, 0.6, 0.2121, 0, 0.6, 0, 0.2121, 0.6, -0.2121, 0.3, 0.6, 0, 0, 0.6, 0, 0, 0.6, -0.3, 0.2121, 0.6, -0.2121, 0, 0.6, 0, -0.2121, 0.6, -0.2121, 0, 0.6, -0.3, 0, 0.6, 0, -0.3, 0.6, 0, -0.2121, 0.6, -0.2121, 0, 0.6, 0, -0.2121, 0.6, 0.2121, -0.3, 0.6, 0, 0, 0.6, 0, 0, 0.6, 0.3, -0.2121, 0.6, 0.2121, 0, -0.6, 0, 0, -0.6, 0.5, 0.3536, -0.6, 0.3536, 0, -0.6, 0, 0.3536, -0.6, 0.3536, 0.5, -0.6, 0, 0, -0.6, 0, 0.5, -0.6, 0, 0.3536, -0.6, -0.3536, 0, -0.6, 0, 0.3536, -0.6, -0.3536, 0, -0.6, -0.5, 0, -0.6, 0, 0, -0.6, -0.5, -0.3536, -0.6, -0.3536, 0, -0.6, 0, -0.3536, -0.6, -0.3536, -0.5, -0.6, 0, 0, -0.6, 0, -0.5, -0.6, 0, -0.3536, -0.6, 0.3536, 0, -0.6, 0, -0.3536, -0.6, 0.3536, 0, -0.6, 0.5 )
+
+[sub_resource type="CylinderShape" id=32]
+height = 6.80036
+
+[sub_resource type="BoxShape" id=33]
+extents = Vector3( 0.656463, 0.890296, 0.176514 )
 
 [node name="debug_level" type="Spatial"]
 script = ExtResource( 4 )
@@ -198,11 +198,8 @@ mesh = SubResource( 14 )
 [node name="CollisionShape" type="CollisionShape" parent="pedestal1/StaticBody"]
 shape = SubResource( 15 )
 
-[node name="orb" type="MeshInstance" parent="pedestal1"]
+[node name="area" type="Area" parent="pedestal1"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
-mesh = SubResource( 19 )
-
-[node name="area" type="Area" parent="pedestal1/orb"]
 collision_layer = 2
 collision_mask = 2
 monitoring = false
@@ -210,7 +207,11 @@ script = ExtResource( 5 )
 title = "red_orb"
 type = 1
 
-[node name="shape" type="CollisionShape" parent="pedestal1/orb/area"]
+[node name="orb" type="MeshInstance" parent="pedestal1/area"]
+mesh = SubResource( 19 )
+skeleton = NodePath("../..")
+
+[node name="shape" type="CollisionShape" parent="pedestal1/area"]
 shape = SubResource( 22 )
 
 [node name="pedestal2" type="MeshInstance" parent="."]
@@ -222,11 +223,8 @@ mesh = SubResource( 14 )
 [node name="CollisionShape" type="CollisionShape" parent="pedestal2/StaticBody"]
 shape = SubResource( 15 )
 
-[node name="orb" type="MeshInstance" parent="pedestal2"]
+[node name="area" type="Area" parent="pedestal2"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
-mesh = SubResource( 24 )
-
-[node name="area" type="Area" parent="pedestal2/orb"]
 collision_layer = 2
 collision_mask = 2
 monitoring = false
@@ -234,7 +232,11 @@ script = ExtResource( 5 )
 title = "green_orb"
 type = 1
 
-[node name="shape" type="CollisionShape" parent="pedestal2/orb/area"]
+[node name="orb" type="MeshInstance" parent="pedestal2/area"]
+mesh = SubResource( 24 )
+skeleton = NodePath("../..")
+
+[node name="shape" type="CollisionShape" parent="pedestal2/area"]
 shape = SubResource( 22 )
 
 [node name="pedestal3" type="MeshInstance" parent="."]
@@ -246,11 +248,8 @@ mesh = SubResource( 14 )
 [node name="CollisionShape" type="CollisionShape" parent="pedestal3/StaticBody"]
 shape = SubResource( 15 )
 
-[node name="orb" type="MeshInstance" parent="pedestal3"]
+[node name="area" type="Area" parent="pedestal3"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
-mesh = SubResource( 26 )
-
-[node name="area" type="Area" parent="pedestal3/orb"]
 collision_layer = 2
 collision_mask = 2
 monitoring = false
@@ -258,36 +257,93 @@ script = ExtResource( 5 )
 title = "blue_orb"
 type = 1
 
-[node name="shape" type="CollisionShape" parent="pedestal3/orb/area"]
+[node name="orb" type="MeshInstance" parent="pedestal3/area"]
+mesh = SubResource( 26 )
+skeleton = NodePath("../..")
+
+[node name="shape" type="CollisionShape" parent="pedestal3/area"]
 shape = SubResource( 22 )
 
 [node name="pedestal4" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.10562, 0.5, -7.30361 )
 mesh = SubResource( 27 )
 
-[node name="orb" type="MeshInstance" parent="pedestal4"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.38419e-07, 1.0221, 0 )
-mesh = SubResource( 29 )
-
-[node name="area" type="Area" parent="pedestal4/orb"]
+[node name="InterArea" type="Area" parent="pedestal4"]
+transform = Transform( 0.562438, 0, 0, 0, 0.562438, 4.59582e-14, 0, -4.59582e-14, 0.562438, 0, 0.627947, 0 )
 collision_layer = 2
 collision_mask = 2
-monitoring = false
 script = ExtResource( 5 )
-title = "grab_orb"
-type = 2
+title = "hunting_rifle"
+type = 3
 
-[node name="shape" type="CollisionShape" parent="pedestal4/orb/area"]
-shape = SubResource( 22 )
+[node name="hunting_rifle" parent="pedestal4/InterArea" instance=ExtResource( 6 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+skeleton = NodePath("../..")
+
+[node name="shape" type="CollisionShape" parent="pedestal4/InterArea"]
+transform = Transform( 1, 0, 0, 0, 1, 6.77626e-21, 0, -6.77626e-21, 1, 0.362737, 0, 0.103843 )
+shape = SubResource( 31 )
 
 [node name="StaticBody" type="StaticBody" parent="pedestal4"]
 
 [node name="CollisionShape" type="CollisionShape" parent="pedestal4/StaticBody"]
 shape = SubResource( 30 )
 
-[connection signal="interacted" from="pedestal1/orb/area" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal2/orb/area" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal3/orb/area" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal4/orb/area" to="." method="_on_area_interacted"]
+[node name="pedestal5" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6167, 0.5, -7.30361 )
+mesh = SubResource( 27 )
+
+[node name="InterArea" type="Area" parent="pedestal5"]
+transform = Transform( 0.0786205, 0, 0, 0, 0.070361, 0, 0, 0, 0.0786205, 0, 0.671183, 0 )
+collision_layer = 2
+collision_mask = 2
+script = ExtResource( 5 )
+title = "water_bottle"
+type = 3
+
+[node name="water_bottle" parent="pedestal5/InterArea" instance=ExtResource( 7 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+skeleton = NodePath("../..")
+
+[node name="shape" type="CollisionShape" parent="pedestal5/InterArea"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0478058, 2.55421, 0 )
+shape = SubResource( 32 )
+
+[node name="StaticBody" type="StaticBody" parent="pedestal5"]
+
+[node name="CollisionShape" type="CollisionShape" parent="pedestal5/StaticBody"]
+shape = SubResource( 30 )
+
+[node name="pedestal6" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.40828, 0.5, -7.30361 )
+mesh = SubResource( 27 )
+
+[node name="InterArea" type="Area" parent="pedestal6"]
+transform = Transform( 0.129315, 0, 0, 0, -5.65254e-09, 0.129315, 0, -0.129315, -5.65254e-09, 0, 0.623644, 0.0407271 )
+collision_layer = 2
+collision_mask = 2
+script = ExtResource( 5 )
+title = "lighter"
+type = 3
+
+[node name="lighter" parent="pedestal6/InterArea" instance=ExtResource( 8 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+skeleton = NodePath("../..")
+
+[node name="shape" type="CollisionShape" parent="pedestal6/InterArea"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.200417, 0.438473, -0.00710106 )
+shape = SubResource( 33 )
+
+[node name="StaticBody" type="StaticBody" parent="pedestal6"]
+
+[node name="CollisionShape" type="CollisionShape" parent="pedestal6/StaticBody"]
+shape = SubResource( 30 )
+
+[connection signal="interacted" from="pedestal1/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="pedestal2/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="pedestal3/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="pedestal4/InterArea" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="pedestal5/InterArea" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="pedestal6/InterArea" to="." method="_on_area_interacted"]
 
 [editable path="player"]

@@ -49,7 +49,8 @@ func _load_state() -> void:
         _save_state()
         return
 
-    assert(typeof(res.result) == TYPE_DICTIONARY)
+    assert(typeof(res.result) == TYPE_DICTIONARY,
+        "Save file did not contain a dicitonary")
     save = res.result
 
 
@@ -58,7 +59,7 @@ func _save_state() -> void:
     var dir := Directory.new()
     if !dir.dir_exists(SAVES_DIR):
         var err := dir.make_dir_recursive(SAVES_DIR)
-        assert(err == OK)
+        assert(err == OK, "Failed to create saves directory")
 
     var error := file.open(SAVES_FILE, File.WRITE_READ)
     if error != OK:

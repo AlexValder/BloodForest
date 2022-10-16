@@ -1,0 +1,13 @@
+[remap]
+
+importer="image"
+type="Image"
+path="res://.import/debug_level.png-d11d28c72eebe249a405c357cac90d3d.image"
+
+[deps]
+
+source_file="res://assets/gui/icons/debug_level.png"
+dest_files=[ "res://.import/debug_level.png-d11d28c72eebe249a405c357cac90d3d.image" ]
+
+[params]
+

@@ -1,16 +1,23 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://scenes/gui/loading.gd" type="Script" id=1]
 [ext_resource path="res://assets/gui/default.tres" type="Theme" id=2]
+[ext_resource path="res://assets/materials/gui_shaders/blinking.gdshader" type="Shader" id=3]
+
+[sub_resource type="ShaderMaterial" id=1]
+shader = ExtResource( 3 )
+shader_param/color1 = Color( 1, 1, 1, 1 )
+shader_param/color2 = Color( 0.564706, 0.564706, 0.564706, 1 )
+shader_param/speed = 5.0
 
 [node name="root" type="Control"]
 pause_mode = 2
+physics_interpolation_mode = 1
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 2 )
 script = ExtResource( 1 )
 SIMULATED_DELAY_SEC = 0.05
-tips = PoolStringArray( "Darkness is your friend. Stay away from sources of light to avoid being seen.", "You don\'t get tired. You are stronger and faster than any human, but humans\' strength is in their cooperation and numbers. Deal with them one by one.", "You may never age, but you definitely not immortal. Avoid danger whenever possible." )
 
 [node name="bg" type="ColorRect" parent="."]
 anchor_right = 1.0
@@ -24,16 +31,26 @@ anchor_right = 0.97
 anchor_bottom = 0.95
 size_flags_horizontal = 3
 size_flags_vertical = 3
-custom_constants/separation = 50
+custom_constants/separation = 10
 alignment = 2
 
 [node name="tip" type="RichTextLabel" parent="vbox"]
 unique_name_in_owner = true
-margin_top = 182.0
+margin_top = 199.0
 margin_right = 481.0
-margin_bottom = 196.0
+margin_bottom = 213.0
 bbcode_enabled = true
 fit_content_height = true
+
+[node name="continue" type="Label" parent="vbox"]
+unique_name_in_owner = true
+material = SubResource( 1 )
+margin_top = 223.0
+margin_right = 481.0
+margin_bottom = 236.0
+text = "Press any button to continue"
+align = 1
+valign = 1
 
 [node name="progress" type="ProgressBar" parent="vbox"]
 unique_name_in_owner = true
@@ -43,3 +60,5 @@ margin_bottom = 259.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 1
+
+[connection signal="visibility_changed" from="." to="." method="_on_root_visibility_changed"]

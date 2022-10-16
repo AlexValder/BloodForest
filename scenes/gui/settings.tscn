@@ -1,0 +1,218 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://assets/gui/default.tres" type="Theme" id=1]
+
+[node name="root" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 1 )
+
+[node name="tabs" type="TabContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="audio" type="ScrollContainer" parent="tabs"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 31.0
+margin_right = -4.0
+margin_bottom = -4.0
+follow_focus = true
+
+[node name="vbox" type="VBoxContainer" parent="tabs/audio"]
+margin_right = 504.0
+margin_bottom = 44.0
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="grid" type="GridContainer" parent="tabs/audio/vbox"]
+margin_right = 504.0
+margin_bottom = 44.0
+columns = 2
+
+[node name="label00" type="Label" parent="tabs/audio/vbox/grid"]
+margin_right = 35.0
+margin_bottom = 16.0
+size_flags_vertical = 3
+text = "Volume"
+align = 2
+valign = 1
+
+[node name="hbox" type="HBoxContainer" parent="tabs/audio/vbox/grid"]
+margin_left = 39.0
+margin_right = 504.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+
+[node name="hslider" type="HSlider" parent="tabs/audio/vbox/grid/hbox"]
+margin_right = 437.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+max_value = 200.0
+value = 100.0
+
+[node name="value" type="Label" parent="tabs/audio/vbox/grid/hbox"]
+margin_left = 441.0
+margin_top = 1.0
+margin_right = 465.0
+margin_bottom = 14.0
+text = "100%"
+
+[node name="label01" type="Label" parent="tabs/audio/vbox/grid"]
+margin_top = 20.0
+margin_right = 35.0
+margin_bottom = 44.0
+size_flags_vertical = 3
+text = "Mute"
+align = 2
+valign = 1
+
+[node name="CheckBox" type="CheckBox" parent="tabs/audio/vbox/grid"]
+margin_left = 39.0
+margin_top = 20.0
+margin_right = 504.0
+margin_bottom = 44.0
+
+[node name="graphics" type="ScrollContainer" parent="tabs"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="Label" type="Label" parent="tabs/graphics"]
+margin_top = 119.0
+margin_right = 504.0
+margin_bottom = 132.0
+size_flags_horizontal = 3
+size_flags_vertical = 6
+text = "TBA"
+align = 1
+
+[node name="controls" type="ScrollContainer" parent="tabs"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="grid" type="GridContainer" parent="tabs/controls"]
+margin_right = 504.0
+margin_bottom = 252.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/vseparation = 5
+custom_constants/hseparation = 15
+columns = 2
+
+[node name="label00" type="Label" parent="tabs/controls/grid"]
+margin_right = 245.0
+margin_bottom = 13.0
+size_flags_horizontal = 3
+text = "Move"
+align = 2
+valign = 1
+
+[node name="label01" type="Label" parent="tabs/controls/grid"]
+margin_left = 260.0
+margin_right = 504.0
+margin_bottom = 13.0
+size_flags_horizontal = 3
+text = "WASD"
+valign = 1
+
+[node name="label02" type="Label" parent="tabs/controls/grid"]
+margin_top = 18.0
+margin_right = 245.0
+margin_bottom = 31.0
+size_flags_horizontal = 3
+text = "Look"
+align = 2
+valign = 1
+
+[node name="label03" type="Label" parent="tabs/controls/grid"]
+margin_left = 260.0
+margin_top = 18.0
+margin_right = 504.0
+margin_bottom = 31.0
+size_flags_horizontal = 3
+text = "Mouse"
+valign = 1
+
+[node name="label04" type="Label" parent="tabs/controls/grid"]
+margin_top = 36.0
+margin_right = 245.0
+margin_bottom = 49.0
+size_flags_horizontal = 3
+text = "Run"
+align = 2
+valign = 1
+
+[node name="label05" type="Label" parent="tabs/controls/grid"]
+margin_left = 260.0
+margin_top = 36.0
+margin_right = 504.0
+margin_bottom = 49.0
+size_flags_horizontal = 3
+text = "Left Shift"
+valign = 1
+
+[node name="label06" type="Label" parent="tabs/controls/grid"]
+margin_top = 54.0
+margin_right = 245.0
+margin_bottom = 67.0
+size_flags_horizontal = 3
+text = "Duck"
+align = 2
+valign = 1
+
+[node name="label07" type="Label" parent="tabs/controls/grid"]
+margin_left = 260.0
+margin_top = 54.0
+margin_right = 504.0
+margin_bottom = 67.0
+size_flags_horizontal = 3
+text = "Left Ctrl"
+valign = 1
+
+[node name="label08" type="Label" parent="tabs/controls/grid"]
+margin_top = 72.0
+margin_right = 245.0
+margin_bottom = 85.0
+size_flags_horizontal = 3
+text = "Interact"
+align = 2
+valign = 1
+
+[node name="label09" type="Label" parent="tabs/controls/grid"]
+margin_left = 260.0
+margin_top = 72.0
+margin_right = 504.0
+margin_bottom = 85.0
+size_flags_horizontal = 3
+text = "LMB"
+valign = 1
+
+[node name="label10" type="Label" parent="tabs/controls/grid"]
+margin_top = 90.0
+margin_right = 245.0
+margin_bottom = 103.0
+size_flags_horizontal = 3
+text = "Pause"
+align = 2
+valign = 1
+
+[node name="label11" type="Label" parent="tabs/controls/grid"]
+margin_left = 260.0
+margin_top = 90.0
+margin_right = 504.0
+margin_bottom = 103.0
+size_flags_horizontal = 3
+text = "Esc"
+valign = 1

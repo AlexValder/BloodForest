@@ -6,23 +6,33 @@ export var joy_sensitivity := 0.01
 
 const DUCK_SPEED := 2.5
 const WALK_SPEED := 4.0
-const RUN_SPEED := 6.0
-const ACCEL := 40.0
+const RUN_SPEED := 7.0
 const GRAVITY := -160
 
 onready var _camera := $player_camera as PlayerCamera
 onready var _ray := $player_camera/arm as RayCast
 onready var _crosshair := $"%crosshair" as TextureRect
+onready var _inventory := $HUD/inventory as Inventory
 onready var _tween := $tween as Tween
 var _velocity := Vector3.ZERO
 var _snap_vector := Vector3.DOWN
 var _ducking := false
 
 onready var _icons := {
+    "none" : preload("res://assets/gui/hud/none_icon.png"),
     "dot" : preload("res://assets/gui/hud/dot_icon.png"),
     "hand" : preload("res://assets/gui/hud/hand_icon.png"),
     "eye" : preload("res://assets/gui/hud/eye_icon.png"),
+    "pickup" : preload("res://assets/gui/hud/pickup_icon.png"),
 }
+
+
+func pick_up(path: String) -> void:
+    _inventory.add_item(path)
+
+
+func _ready() -> void:
+    _inventory.hide()
 
 
 func _speed() -> float:
@@ -43,6 +53,11 @@ func _unhandled_input(event: InputEvent) -> void:
         rotation.y -= event.relative.x * mouse_sensitivity
         rotation.y = wrapf(rotation.y, 0, 2*PI)
 
+    if event.is_action_released("inventory"):
+        get_tree().set_input_as_handled()
+        _inventory.show_inv()
+
+
     if event.is_action_released("interact"):
         get_tree().set_input_as_handled()
 
@@ -59,17 +74,22 @@ func _unhandled_input(event: InputEvent) -> void:
 func _tween_ducking(ducking: bool) -> void:
     _ducking = ducking
     get_tree().set_input_as_handled()
-    _tween.stop_all()
-    _tween.interpolate_property(
-        self, "scale:y", null, 0.5 if ducking else 1.0, 0.3)
-    _tween.start()
+    var success = _tween.stop_all()
+    assert(success, "Failed to stop_all on the tween")
+    success = _tween.interpolate_property(
+        self, "scale:y", null, 0.5 if ducking else 1.0, 0.25,
+        Tween.TRANS_CIRC, Tween.EASE_IN_OUT)
+    assert(success, "Failed to interpolate_property on the tween")
+    success = _tween.start()
+    assert(success, "Failed to start on the tween")
 
 
 func _physics_process(delta: float) -> void:
     var collider := _ray.get_collider()
     _process_collision(collider)
 
-    var look_dir := Input.get_vector("look_left", "look_right", "look_up", "look_down")
+    var look_dir := Input.get_vector(
+        "look_left", "look_right", "look_up", "look_down")
     _camera.rotation.x -= look_dir.y * joy_sensitivity
     _camera.rotation.x = clamp(_camera.rotation.x, -PI/2, PI/6)
 
@@ -99,6 +119,9 @@ func _process_collision(coll: InterArea) -> void:
             _crosshair.texture = _icons["eye"]
         2:
             _crosshair.texture = _icons["hand"]
+        3:
+            _crosshair.texture = _icons["pickup"]
         _:
-            _crosshair.texture = _icons["dot"]
-            push_warning("Unknown interactable type")
+            _crosshair.texture = _icons["none"]
+            if coll.type != 0:
+                push_warning("Unknown interactable type")
