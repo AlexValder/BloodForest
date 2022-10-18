@@ -26,6 +26,7 @@ mouse_sensitivity = 0.005
 
 [node name="player_camera" type="Camera" parent="."]
 transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 1.8, 0 )
+cull_mask = 1048573
 environment = ExtResource( 3 )
 script = ExtResource( 2 )
 

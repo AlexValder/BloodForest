@@ -3,11 +3,13 @@ extends Node
 const SAVES_DIR := "user://saves/"
 const SAVES_FILE := "%ssave01.dat" % SAVES_DIR
 onready var save := {
-    "intro" : {
+    "version": "0.0.2", # increase with each structure change
+    "levels": [
+        {
+        "unlocked": true,
         "lie": "", # fake profession
         "driver_killed": false, # whether we killed or not
-    },
-    "levels": [
+        },
         {
         "unlocked": false,
         },
@@ -21,7 +23,15 @@ onready var save := {
         "unlocked": false,
         }
     ],
-    "extra": {},
+    "player_state": {
+        "inv": [
+            [],
+            [],
+            [],
+            [],
+            [],
+       ],
+    },
 }
 
 
@@ -30,7 +40,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-    _save_state()
+    save_state()
 
 
 func _load_state() -> void:
@@ -38,23 +48,27 @@ func _load_state() -> void:
     var file := File.new()
     var error := file.open(SAVES_FILE, File.READ)
     if error != OK:
-        push_error("Failed to load state: %d" % error)
-        _save_state()
-
-    var res := JSON.parse(file.get_as_text())
-    if res.error != OK:
-        push_error("Failed to parse save file. Reason: %s at %d"
-            % [res.error_string, res.error_line])
-        # todo: clear defaults
-        _save_state()
+        push_warning("Failed to load state: %d" % error)
+        save_state()
         return
 
-    assert(typeof(res.result) == TYPE_DICTIONARY,
-        "Save file did not contain a dicitonary")
-    save = res.result
+    var res := JSON.parse(file.get_as_text())
+    if res.error != OK or typeof(res.result) != TYPE_DICTIONARY:
+        push_warning("Failed to parse save file. Reason: %s at %d"
+            % [res.error_string, res.error_line])
+        save_state()
+        return
+
+    var dict := res.result as Dictionary
+    if !dict.has("version") or dict["version"] != save["version"]:
+        print("Unknown save file format. Rewriting...")
+        save_state()
+        return
+
+    save = dict
 
 
-func _save_state() -> void:
+func save_state() -> void:
     var file := File.new()
     var dir := Directory.new()
     if !dir.dir_exists(SAVES_DIR):

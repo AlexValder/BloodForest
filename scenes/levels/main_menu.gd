@@ -6,6 +6,21 @@ onready var _level_select := $gui/level_select as GridContainer
 func _ready() -> void:
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
+    unlock_levels()
+
+
+func unlock_levels() -> void:
+    var i := -1
+    var count := _level_select.get_child_count()
+    for level in SaveData.save["levels"]:
+        i += 1
+
+        if i >= count:
+            push_warning("Too many levels in save file")
+            break
+
+        (_level_select.get_child(i) as Button).disabled = !level.unlocked
+
 
 func load_level(name: String) -> void:
     GameManager.load_level(name)

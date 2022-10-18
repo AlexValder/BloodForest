@@ -3,10 +3,9 @@ class_name Inventory
 
 onready var _list := $"%list" as ItemList
 onready var _desc := $"%text" as Label
-onready var _viewport := $"%viewport" as Viewport
+onready var _viewport := $"%viewport" as InventoryViewport
 
 var _items: Array
-var _mesh: Node
 
 
 func show_inv() -> void:
@@ -20,11 +19,29 @@ func show_inv() -> void:
 func _input(event: InputEvent) -> void:
     if event.is_action_released("inventory") \
     or event.is_action_released("pause"):
-        Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
         get_tree().set_input_as_handled()
+        Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
         set_process_input(false)
         get_tree().paused = false
         hide()
+
+
+func has_item_by_path(path: String) -> bool:
+    return has_item("path", path)
+
+
+func has_item_by_name(name: String) -> bool:
+    return has_item("name", name)
+
+
+func has_item(field: String, value: String) -> bool:
+    if _items.empty(): return false
+
+    for item in _items:
+        if item[field] == value:
+            return true
+
+    return false
 
 
 func add_item(path: String) -> void:
@@ -49,7 +66,13 @@ func remove_item(path: String) -> void:
         break
 
 
-func update_list() -> void:
+func clear_inventory() -> void:
+    _items.clear()
+    _list.clear()
+    _viewport.clear()
+
+
+func get_all_items() -> void:
     _items = Database.get_items()
     for item in _items:
         _list.add_item(item.name)
@@ -57,12 +80,22 @@ func update_list() -> void:
     _on_list_item_selected(0)
 
 
+func get_item_save() -> PoolStringArray:
+    var list := PoolStringArray()
+
+    for item in _items:
+        list.append(item.path)
+
+    return list
+
+
+func load_from_list(list: PoolStringArray) -> void:
+    clear_inventory()
+
+    for item in list:
+        add_item(item)
+
+
 func _on_list_item_selected(index: int) -> void:
-    if _mesh != null:
-        _mesh.queue_free()
-        _mesh = null
-
-    _mesh = (load(_items[index].path) as PackedScene).instance()
-    _viewport.add_child(_mesh)
-
+    _viewport.show_item(_items[index].path)
     _desc.text = _items[index].description

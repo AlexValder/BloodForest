@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Spatial",
+"class": "BaseLevel",
+"language": "GDScript",
+"path": "res://scripts/base_level.gd"
+}, {
 "base": "CanvasLayer",
 "class": "DescBalloon",
 "language": "GDScript",
@@ -28,6 +33,11 @@ _global_script_classes=[ {
 "class": "Inventory",
 "language": "GDScript",
 "path": "res://scenes/gui/inventory.gd"
+}, {
+"base": "Viewport",
+"class": "InventoryViewport",
+"language": "GDScript",
+"path": "res://scenes/gui/inv_viewport.gd"
 }, {
 "base": "Control",
 "class": "LoadingScreen",
@@ -55,10 +65,12 @@ _global_script_classes=[ {
 "path": "res://scenes/player/player_camera.gd"
 } ]
 _global_script_class_icons={
+"BaseLevel": "",
 "DescBalloon": "",
 "DialogueResource": "",
 "InterArea": "",
 "Inventory": "",
+"InventoryViewport": "",
 "LoadingScreen": "",
 "MainMenu": "",
 "PauseMenu": "",
@@ -78,11 +90,11 @@ default_bus_layout=""
 
 [autoload]
 
-GameManager="*res://scenes/singletons/game_manager.gd"
-Settings="*res://scenes/singletons/settings.gd"
+GameManager="*res://scripts/singletons/game_manager.gd"
+Settings="*res://scripts/singletons/settings.gd"
 DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
-SaveData="*res://scenes/singletons/save_data.gd"
-Database="*res://scenes/singletons/db_wrapper.gd"
+SaveData="*res://scripts/singletons/save_data.gd"
+Database="*res://scripts/singletons/db_wrapper.gd"
 
 [display]
 
@@ -188,6 +200,8 @@ inventory={
 
 [layer_names]
 
+3d_render/layer_1="environment"
+3d_render/layer_2="inventory"
 3d_physics/layer_1="environment"
 3d_physics/layer_2="interactable"
 3d_physics/layer_3="player"
