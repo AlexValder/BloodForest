@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=2]
+[gd_scene load_steps=52 format=2]
 
 [ext_resource path="res://scenes/player/player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://assets/textures/scenery/plain_textures/ground01.png" type="Texture" id=2]
@@ -8,6 +8,7 @@
 [ext_resource path="res://scenes/items/hunting_rifle.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scenes/items/water_bottle.tscn" type="PackedScene" id=7]
 [ext_resource path="res://scenes/items/lighter.tscn" type="PackedScene" id=8]
+[ext_resource path="res://assets/gui/fonts/PixelNewspaperIII.tres" type="DynamicFont" id=9]
 
 [sub_resource type="CubeMesh" id=1]
 
@@ -122,16 +123,17 @@ radial_segments = 8
 rings = 1
 
 [sub_resource type="BoxShape" id=31]
-extents = Vector3( 1.79621, 0.0831335, 0.257108 )
+extents = Vector3( 1.03483, 0.0390273, 0.163353 )
 
 [sub_resource type="ConcavePolygonShape" id=30]
 data = PoolVector3Array( 0, 0.6, 0.3, 0.2121, 0.6, 0.2121, 0, 0, 0.4, 0.2121, 0.6, 0.2121, 0.2828, 0, 0.2828, 0, 0, 0.4, 0.2121, 0.6, 0.2121, 0.3, 0.6, 0, 0.2828, 0, 0.2828, 0.3, 0.6, 0, 0.4, 0, 0, 0.2828, 0, 0.2828, 0.3, 0.6, 0, 0.2121, 0.6, -0.2121, 0.4, 0, 0, 0.2121, 0.6, -0.2121, 0.2828, 0, -0.2828, 0.4, 0, 0, 0.2121, 0.6, -0.2121, 0, 0.6, -0.3, 0.2828, 0, -0.2828, 0, 0.6, -0.3, 0, 0, -0.4, 0.2828, 0, -0.2828, 0, 0.6, -0.3, -0.2121, 0.6, -0.2121, 0, 0, -0.4, -0.2121, 0.6, -0.2121, -0.2828, 0, -0.2828, 0, 0, -0.4, -0.2121, 0.6, -0.2121, -0.3, 0.6, 0, -0.2828, 0, -0.2828, -0.3, 0.6, 0, -0.4, 0, 0, -0.2828, 0, -0.2828, -0.3, 0.6, 0, -0.2121, 0.6, 0.2121, -0.4, 0, 0, -0.2121, 0.6, 0.2121, -0.2828, 0, 0.2828, -0.4, 0, 0, -0.2121, 0.6, 0.2121, 0, 0.6, 0.3, -0.2828, 0, 0.2828, 0, 0.6, 0.3, 0, 0, 0.4, -0.2828, 0, 0.2828, 0, 0, 0.4, 0.2828, 0, 0.2828, 0, -0.6, 0.5, 0.2828, 0, 0.2828, 0.3536, -0.6, 0.3536, 0, -0.6, 0.5, 0.2828, 0, 0.2828, 0.4, 0, 0, 0.3536, -0.6, 0.3536, 0.4, 0, 0, 0.5, -0.6, 0, 0.3536, -0.6, 0.3536, 0.4, 0, 0, 0.2828, 0, -0.2828, 0.5, -0.6, 0, 0.2828, 0, -0.2828, 0.3536, -0.6, -0.3536, 0.5, -0.6, 0, 0.2828, 0, -0.2828, 0, 0, -0.4, 0.3536, -0.6, -0.3536, 0, 0, -0.4, 0, -0.6, -0.5, 0.3536, -0.6, -0.3536, 0, 0, -0.4, -0.2828, 0, -0.2828, 0, -0.6, -0.5, -0.2828, 0, -0.2828, -0.3536, -0.6, -0.3536, 0, -0.6, -0.5, -0.2828, 0, -0.2828, -0.4, 0, 0, -0.3536, -0.6, -0.3536, -0.4, 0, 0, -0.5, -0.6, 0, -0.3536, -0.6, -0.3536, -0.4, 0, 0, -0.2828, 0, 0.2828, -0.5, -0.6, 0, -0.2828, 0, 0.2828, -0.3536, -0.6, 0.3536, -0.5, -0.6, 0, -0.2828, 0, 0.2828, 0, 0, 0.4, -0.3536, -0.6, 0.3536, 0, 0, 0.4, 0, -0.6, 0.5, -0.3536, -0.6, 0.3536, 0, 0.6, 0, 0.2121, 0.6, 0.2121, 0, 0.6, 0.3, 0, 0.6, 0, 0.3, 0.6, 0, 0.2121, 0.6, 0.2121, 0, 0.6, 0, 0.2121, 0.6, -0.2121, 0.3, 0.6, 0, 0, 0.6, 0, 0, 0.6, -0.3, 0.2121, 0.6, -0.2121, 0, 0.6, 0, -0.2121, 0.6, -0.2121, 0, 0.6, -0.3, 0, 0.6, 0, -0.3, 0.6, 0, -0.2121, 0.6, -0.2121, 0, 0.6, 0, -0.2121, 0.6, 0.2121, -0.3, 0.6, 0, 0, 0.6, 0, 0, 0.6, 0.3, -0.2121, 0.6, 0.2121, 0, -0.6, 0, 0, -0.6, 0.5, 0.3536, -0.6, 0.3536, 0, -0.6, 0, 0.3536, -0.6, 0.3536, 0.5, -0.6, 0, 0, -0.6, 0, 0.5, -0.6, 0, 0.3536, -0.6, -0.3536, 0, -0.6, 0, 0.3536, -0.6, -0.3536, 0, -0.6, -0.5, 0, -0.6, 0, 0, -0.6, -0.5, -0.3536, -0.6, -0.3536, 0, -0.6, 0, -0.3536, -0.6, -0.3536, -0.5, -0.6, 0, 0, -0.6, 0, -0.5, -0.6, 0, -0.3536, -0.6, 0.3536, 0, -0.6, 0, -0.3536, -0.6, 0.3536, 0, -0.6, 0.5 )
 
 [sub_resource type="CylinderShape" id=32]
-height = 6.80036
+height = 0.54181
+radius = 0.0894102
 
 [sub_resource type="BoxShape" id=33]
-extents = Vector3( 0.656463, 0.890296, 0.176514 )
+extents = Vector3( 0.0864941, 0.11421, 0.023014 )
 
 [sub_resource type="OpenSimplexNoise" id=35]
 
@@ -158,6 +160,54 @@ rings = 1
 [sub_resource type="CylinderShape" id=38]
 height = 0.1
 radius = 0.15
+
+[sub_resource type="TextMesh" id=39]
+text = "reset"
+font = ExtResource( 9 )
+
+[sub_resource type="OpenSimplexNoise" id=43]
+
+[sub_resource type="NoiseTexture" id=44]
+flags = 2
+seamless = true
+noise = SubResource( 43 )
+
+[sub_resource type="SpatialMaterial" id=45]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.854902, 1, 0.329412, 1 )
+albedo_texture = SubResource( 44 )
+
+[sub_resource type="SphereMesh" id=40]
+material = SubResource( 45 )
+radius = 0.15
+height = 0.3
+radial_segments = 8
+rings = 4
+
+[sub_resource type="OpenSimplexNoise" id=46]
+
+[sub_resource type="NoiseTexture" id=47]
+width = 1024
+height = 256
+seamless = true
+noise = SubResource( 46 )
+
+[sub_resource type="SpatialMaterial" id=48]
+vertex_color_use_as_albedo = true
+albedo_color = Color( 1, 0.388235, 0.388235, 1 )
+albedo_texture = SubResource( 47 )
+
+[sub_resource type="CylinderMesh" id=41]
+material = SubResource( 48 )
+top_radius = 0.15
+bottom_radius = 0.2
+height = 1.6
+radial_segments = 8
+rings = 1
+
+[sub_resource type="CylinderShape" id=42]
+radius = 0.291122
 
 [node name="debug_level" type="Spatial"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.50484, 0 )
@@ -293,19 +343,18 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.10562, 0.5, -7.30361 )
 mesh = SubResource( 27 )
 
 [node name="InterArea" type="Area" parent="pedestal4"]
-transform = Transform( 0.562438, 0, 0, 0, 0.562438, 4.59582e-14, 0, -4.59582e-14, 0.562438, 0, 0.627947, 0 )
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.627947, 0 )
 collision_layer = 2
 collision_mask = 2
+monitoring = false
 script = ExtResource( 5 )
 title = "hunting_rifle"
 type = 3
 
 [node name="hunting_rifle" parent="pedestal4/InterArea" instance=ExtResource( 6 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-skeleton = NodePath("../..")
 
 [node name="shape" type="CollisionShape" parent="pedestal4/InterArea"]
-transform = Transform( 1, 0, 0, 0, 1, 6.77626e-21, 0, -6.77626e-21, 1, 0.362737, 0, 0.103843 )
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0.193288, -0.059464, 0 )
 shape = SubResource( 31 )
 
 [node name="StaticBody" type="StaticBody" parent="pedestal4"]
@@ -318,19 +367,18 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6167, 0.5, -7.30361 )
 mesh = SubResource( 27 )
 
 [node name="InterArea" type="Area" parent="pedestal5"]
-transform = Transform( 0.0786205, 0, 0, 0, 0.070361, 0, 0, 0, 0.0786205, 0, 0.671183, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.671183, 0 )
 collision_layer = 2
 collision_mask = 2
+monitoring = false
 script = ExtResource( 5 )
 title = "water_bottle"
 type = 3
 
 [node name="water_bottle" parent="pedestal5/InterArea" instance=ExtResource( 7 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-skeleton = NodePath("../..")
 
 [node name="shape" type="CollisionShape" parent="pedestal5/InterArea"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0478058, 2.55421, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.204576, 0 )
 shape = SubResource( 32 )
 
 [node name="StaticBody" type="StaticBody" parent="pedestal5"]
@@ -343,19 +391,18 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.40828, 0.5, -7.30361 )
 mesh = SubResource( 27 )
 
 [node name="InterArea" type="Area" parent="pedestal6"]
-transform = Transform( 0.129315, 0, 0, 0, -5.65254e-09, 0.129315, 0, -0.129315, -5.65254e-09, 0, 0.623644, 0.0407271 )
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.623644, 0.0407271 )
 collision_layer = 2
 collision_mask = 2
+monitoring = false
 script = ExtResource( 5 )
 title = "lighter"
 type = 3
 
 [node name="lighter" parent="pedestal6/InterArea" instance=ExtResource( 8 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-skeleton = NodePath("../..")
 
 [node name="shape" type="CollisionShape" parent="pedestal6/InterArea"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.200417, 0.438473, -0.00710106 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0294251, 0.056488, 0.00394416 )
 shape = SubResource( 33 )
 
 [node name="StaticBody" type="StaticBody" parent="pedestal6"]
@@ -363,11 +410,14 @@ shape = SubResource( 33 )
 [node name="CollisionShape" type="CollisionShape" parent="pedestal6/StaticBody"]
 shape = SubResource( 30 )
 
-[node name="button" type="MeshInstance" parent="."]
-transform = Transform( -1, 8.74228e-08, 3.82137e-15, 0, -4.37114e-08, 1, 8.74228e-08, 1, 4.37114e-08, -1.339, 2.257, -9.9 )
-mesh = SubResource( 34 )
+[node name="reset_button" type="Spatial" parent="."]
+transform = Transform( -1, 1.50996e-07, 6.60024e-15, 0, -4.37114e-08, 1, 1.50996e-07, 1, 4.37114e-08, -1.339, 2.257, -9.9 )
 
-[node name="InterArea" type="Area" parent="button"]
+[node name="button" type="MeshInstance" parent="reset_button"]
+mesh = SubResource( 34 )
+skeleton = NodePath("../..")
+
+[node name="InterArea" type="Area" parent="reset_button/button"]
 collision_layer = 2
 collision_mask = 2
 monitoring = false
@@ -375,8 +425,41 @@ script = ExtResource( 5 )
 title = "red_button"
 type = 2
 
-[node name="shape" type="CollisionShape" parent="button/InterArea"]
+[node name="shape" type="CollisionShape" parent="reset_button/button/InterArea"]
 shape = SubResource( 38 )
+
+[node name="text" type="MeshInstance" parent="reset_button"]
+transform = Transform( -1, 8.74228e-08, 1.42109e-14, 0, -4.37114e-08, 1, 8.74228e-08, 1, 4.37114e-08, 0, -0.0321045, 0.5 )
+mesh = SubResource( 39 )
+skeleton = NodePath("../button")
+
+[node name="timer" type="Timer" parent="reset_button"]
+wait_time = 0.5
+one_shot = true
+
+[node name="scarecrow" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -8.48878, 0, 0 )
+
+[node name="InterArea" type="Area" parent="scarecrow"]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource( 5 )
+title = "scarecrow"
+type = 4
+
+[node name="body" type="Spatial" parent="scarecrow/InterArea"]
+
+[node name="head" type="MeshInstance" parent="scarecrow/InterArea/body"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.88355, 0 )
+mesh = SubResource( 40 )
+
+[node name="body" type="MeshInstance" parent="scarecrow/InterArea/body"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.927895, 0 )
+mesh = SubResource( 41 )
+
+[node name="shape" type="CollisionShape" parent="scarecrow/InterArea"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05683, 0 )
+shape = SubResource( 42 )
 
 [node name="player" parent="." instance=ExtResource( 1 )]
 transform = Transform( -1, 0, 1.50996e-07, 0, 1, 0, -1.50996e-07, 0, -1, 0, 0, 0 )
@@ -387,4 +470,5 @@ transform = Transform( -1, 0, 1.50996e-07, 0, 1, 0, -1.50996e-07, 0, -1, 0, 0, 0
 [connection signal="interacted" from="pedestal4/InterArea" to="." method="_on_area_interacted"]
 [connection signal="interacted" from="pedestal5/InterArea" to="." method="_on_area_interacted"]
 [connection signal="interacted" from="pedestal6/InterArea" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="button/InterArea" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="reset_button/button/InterArea" to="." method="_on_area_interacted"]
+[connection signal="timeout" from="reset_button/timer" to="." method="_on_red_button_timer_timeout"]

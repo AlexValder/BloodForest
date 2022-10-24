@@ -79,6 +79,7 @@ script = ExtResource( 1 )
 transform = Transform( 0.789631, 0, 0.613582, 0, 1, 0, -0.613582, 0, 0.789631, 0, 0, 0 )
 
 [node name="camera" type="Camera" parent="bg"]
+unique_name_in_owner = true
 transform = Transform( 0.992221, 0.0343128, 0.119663, 0, 0.961262, -0.275637, -0.124485, 0.273493, 0.953784, 0.021629, 0.472061, 0.08316 )
 environment = ExtResource( 5 )
 current = true
@@ -326,6 +327,7 @@ autoplay = true
 mix_target = 1
 
 [node name="gui" type="CanvasLayer" parent="."]
+follow_viewport_enable = true
 
 [node name="title" type="Label" parent="gui"]
 material = SubResource( 16 )

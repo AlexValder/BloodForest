@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/gui/default.tres" type="Theme" id=1]
-[ext_resource path="res://scenes/gui/inv_viewport.gd" type="Script" id=2]
-[ext_resource path="res://scenes/gui/inventory.gd" type="Script" id=3]
+[ext_resource path="res://scenes/player/inventory.gd" type="Script" id=2]
+[ext_resource path="res://scenes/player/inv_viewport.gd" type="Script" id=3]
 
 [sub_resource type="Environment" id=8]
 background_mode = 1
@@ -13,10 +13,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 1
 theme = ExtResource( 1 )
-script = ExtResource( 3 )
+script = ExtResource( 2 )
 
 [node name="bg" type="ColorRect" parent="."]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color( 0, 0, 0, 1 )
@@ -24,14 +23,12 @@ color = Color( 0, 0, 0, 1 )
 [node name="list" type="ItemList" parent="."]
 pause_mode = 2
 unique_name_in_owner = true
-self_modulate = Color( 1, 1, 1, 0.784314 )
 anchor_top = 0.5
 anchor_right = 0.3
 anchor_bottom = 1.0
 auto_height = true
 
 [node name="desc_panel" type="Panel" parent="."]
-self_modulate = Color( 1, 1, 1, 0.784314 )
 anchor_right = 0.3
 anchor_bottom = 0.5
 
@@ -43,6 +40,7 @@ margin_left = 5.0
 margin_top = 5.0
 margin_right = -5.0
 margin_bottom = -5.0
+text = "I have nothing on me"
 autowrap = true
 
 [node name="view_cont" type="ViewportContainer" parent="."]
@@ -59,7 +57,7 @@ handle_input_locally = false
 hdr = false
 debug_draw = 1
 render_target_update_mode = 3
-script = ExtResource( 2 )
+script = ExtResource( 3 )
 
 [node name="view" type="Camera" parent="view_cont/viewport"]
 transform = Transform( -1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 0, -1, 3.00429e-07, 0, -1.90643 )

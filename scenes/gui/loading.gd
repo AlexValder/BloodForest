@@ -43,7 +43,8 @@ func _on_continue_pressed() -> void:
 func _exit_screen() -> void:
     _done = false
     visible = false
-    get_tree().change_scene_to(_res)
+    var error := get_tree().change_scene_to(_res)
+    assert(error == OK, "Failed to enter loaded scene")
     _res = null
     GameManager.loading = false
 

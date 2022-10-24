@@ -10,14 +10,17 @@ const SETTINGS_FILE := "settings.ini"
 const DEFAULTS := {
     "settings" : {
         "resolution" : Vector2(522, 288),
+        "force_fps": 0,
         "vsync": false,
         "vsync_comp": false,
         "window_mode": WindowMode.Fullscreen,
        },
+    "metadata" : {
+        "version": "0.0.1",
+       },
    }
-var _settings := {}
+var settings := {}
 var _config := ConfigFile.new()
-
 
 
 func _ready() -> void:
@@ -28,19 +31,19 @@ func _load_or_save_settings_file(config: ConfigFile, path: String) -> void:
     if config.load(path) != OK:
         _load_defaults(config, path)
 
-    _settings.clear()
+    settings.clear()
     for section in DEFAULTS:
-        _settings[section] = {}
+        settings[section] = {}
         for key in DEFAULTS[section]:
-            _settings[section][key] = config.get_value(
+            settings[section][key] = config.get_value(
                 section, key, DEFAULTS[section][key])
 
-    _apply_settings(_settings)
+    _apply_settings(settings)
 
 
 func _load_defaults(config: ConfigFile, path: String) -> void:
     config.clear()
-    _settings.clear()
+    settings.clear()
     for section in DEFAULTS:
         for key in DEFAULTS[section]:
             config.set_value(section, key, DEFAULTS[section][key])
@@ -53,6 +56,13 @@ func _apply_settings(dict: Dictionary) -> void:
     var res = dict["settings"]["resolution"]
     if res is Vector2 and res.length() > 0:
         viewport.size = res
+        if OS.get_name() == "Windows":
+            OS.window_size = res
+
+    var fps = dict["settings"]["force_fps"]
+    if fps is int:
+        Engine.target_fps = max(fps, 0) as int # cuts off potential negatives
+        pass
 
     var vsync = dict["settings"]["vsync"]
     if vsync is bool:

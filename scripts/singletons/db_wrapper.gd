@@ -20,8 +20,16 @@ func _load_db() -> void:
         push_error("Failed to open database")
 
 
-func get_item(path: String) -> Array:
-    return _get_from_database("items", "path LIKE '%s'" % path)
+func get_item_by_path(path: String) -> Array:
+    return get_item("path", path)
+
+
+func get_item_by_id(id: int) -> Array:
+    return get_item("id", str(id))
+
+
+func get_item(key: String, value: String) -> Array:
+    return _get_from_database("items", "%s LIKE '%s'" % [key, value])
 
 
 func get_items() -> Array:

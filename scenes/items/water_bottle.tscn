@@ -19,5 +19,6 @@ surfaces/0 = {
 }
 
 [node name="water_bottle" type="MeshInstance"]
-transform = Transform( 0.0786205, 0, 0, 0, 0.070361, 0, 0, 0, 0.0786205, 0, 0, 0 )
+transform = Transform( 0.079, 0, 0, 0, 0.079, 0, 0, 0, 0.079, 0, 0, 0 )
+cast_shadow = 0
 mesh = SubResource( 29 )

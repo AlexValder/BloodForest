@@ -44,9 +44,18 @@ func has_item(field: String, value: String) -> bool:
     return false
 
 
-func add_item(path: String) -> void:
-    var items := Database.get_item(path)
+func add_item_by_id(id: int) -> void:
+    var items := Database.get_item_by_id(id)
     if !items.empty():
+        _desc.text = ""
+        _items.append(items[0])
+        _list.add_item(items[0].name)
+
+
+func add_item_by_path(path: String) -> void:
+    var items := Database.get_item_by_path(path)
+    if !items.empty():
+        _desc.text = ""
         _items.append(items[0])
         _list.add_item(items[0].name)
 
@@ -65,8 +74,12 @@ func remove_item(path: String) -> void:
         _list.remove_item(i)
         break
 
+    if _items.empty():
+        _desc.text = "I have nothing on me"
+
 
 func clear_inventory() -> void:
+    _desc.text = "I have nothing on me"
     _items.clear()
     _list.clear()
     _viewport.clear()
@@ -80,20 +93,20 @@ func get_all_items() -> void:
     _on_list_item_selected(0)
 
 
-func get_item_save() -> PoolStringArray:
-    var list := PoolStringArray()
+func get_item_save() -> PoolIntArray:
+    var list := PoolIntArray()
 
     for item in _items:
-        list.append(item.path)
+        list.append(item.id)
 
     return list
 
 
-func load_from_list(list: PoolStringArray) -> void:
+func load_from_list(list: PoolIntArray) -> void:
     clear_inventory()
 
     for item in list:
-        add_item(item)
+        add_item_by_id(item)
 
 
 func _on_list_item_selected(index: int) -> void:

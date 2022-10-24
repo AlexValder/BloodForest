@@ -2,6 +2,7 @@ extends Node
 class_name MainMenu
 
 onready var _level_select := $gui/level_select as GridContainer
+onready var _camera := $"%camera" as Camera
 
 func _ready() -> void:
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

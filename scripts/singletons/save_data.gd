@@ -3,7 +3,7 @@ extends Node
 const SAVES_DIR := "user://saves/"
 const SAVES_FILE := "%ssave01.dat" % SAVES_DIR
 onready var save := {
-    "version": "0.0.2", # increase with each structure change
+    "version": "0.0.3", # increase with each structure change
     "levels": [
         {
         "unlocked": true,
@@ -25,11 +25,12 @@ onready var save := {
     ],
     "player_state": {
         "inv": [
-            [],
-            [],
-            [],
-            [],
-            [],
+            [], # intro
+            [], # night 1
+            [], # night 2
+            [], # night 3
+            [], # night 4
+            [0], # debug
        ],
     },
 }

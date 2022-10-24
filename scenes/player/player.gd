@@ -24,11 +24,24 @@ onready var _icons := {
     "hand" : preload("res://assets/gui/hud/hand_icon.png"),
     "eye" : preload("res://assets/gui/hud/eye_icon.png"),
     "pickup" : preload("res://assets/gui/hud/pickup_icon.png"),
+    "kill" : preload("res://assets/gui/hud/kill_icon.png"),
 }
 
 
 func pick_up(path: String) -> void:
-    _inventory.add_item(path)
+    _inventory.add_item_by_path(path)
+
+
+func load_inventory(items: PoolIntArray) -> void:
+    _inventory.load_from_list(items)
+
+
+func save_inventory() -> PoolIntArray:
+    return _inventory.get_item_save()
+
+
+func clear_inventory() -> void:
+    _inventory.clear_inventory()
 
 
 func _ready() -> void:
@@ -121,6 +134,8 @@ func _process_collision(coll: InterArea) -> void:
             _crosshair.texture = _icons["hand"]
         3:
             _crosshair.texture = _icons["pickup"]
+        4:
+            _crosshair.texture = _icons["kill"]
         _:
             _crosshair.texture = _icons["none"]
             if coll.type != 0:

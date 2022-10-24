@@ -5,7 +5,7 @@
 [ext_resource path="res://assets/player_env.tres" type="Environment" id=3]
 [ext_resource path="res://assets/gui/default.tres" type="Theme" id=4]
 [ext_resource path="res://assets/gui/hud/dot_icon.png" type="Texture" id=5]
-[ext_resource path="res://scenes/gui/inventory.tscn" type="PackedScene" id=6]
+[ext_resource path="res://scenes/player/inventory.tscn" type="PackedScene" id=6]
 
 [sub_resource type="CylinderShape" id=3]
 margin = 0.5
@@ -70,5 +70,13 @@ script = SubResource( 2 )
 [node name="inventory" parent="HUD" instance=ExtResource( 6 )]
 pause_mode = 2
 visible = false
+
+[node name="events" type="VBoxContainer" parent="HUD"]
+visible = false
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="tween" type="Tween" parent="."]

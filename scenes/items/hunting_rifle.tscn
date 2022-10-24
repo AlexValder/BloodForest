@@ -51,7 +51,7 @@ surfaces/0 = {
 }
 
 [node name="hunting_rifle" type="MeshInstance"]
-transform = Transform( 0.562438, 0, 0, 0, -2.45849e-08, -0.562438, 0, 0.562438, -2.45849e-08, 0, 0, 0 )
+transform = Transform( 0.562, 0, 0, 0, -2.45658e-08, -0.562, 0, 0.562, -2.45658e-08, 0, 0, 0 )
 mesh = SubResource( 9 )
 
 [node name="hunting_rifle_01" type="MeshInstance" parent="."]

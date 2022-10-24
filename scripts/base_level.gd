@@ -6,6 +6,7 @@ onready var _player := $player as Player
 var _in_dialog := false
 
 var level_name: String
+var _id: int
 var _dialog: DialogueResource
 var _action_table: Dictionary
 
@@ -19,10 +20,6 @@ func _on_area_interacted(obj: InterArea, title: String, type: int) -> void:
         1: # TEXT
             _show_description(title)
         2: # ACTION
-            # TODO
-            # there needs to be some way to call a specific function that
-            # corresponds to the "title" and isn't just a runtime dictionary
-            # with function refs
             if _action_table.has(title):
                 var action := _action_table[title] as FuncRef
                 action.call_func(obj, title)
@@ -32,7 +29,12 @@ func _on_area_interacted(obj: InterArea, title: String, type: int) -> void:
         3: # PICKUP
             print("Picked up %s" % title)
             _player.pick_up(obj.model.filename)
-            obj.queue_free()
+            obj.set_collision_layer_bit(1, false)
+            obj.model.queue_free()
+            obj.model = null
+            _in_dialog = false
+        4: # KILL
+            # TODO
             _in_dialog = false
         _:
             _in_dialog = false
@@ -56,5 +58,13 @@ func _ready() -> void:
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
+func _load_save(id: int) -> void:
+    var inv := SaveData.save["player_state"]["inv"][id] as PoolIntArray
+    _player.load_inventory(inv)
+    pass
+
+
 func _exit_tree() -> void:
+    SaveData.save["player_state"]["inv"][_id] = _player.save_inventory()
+
     SaveData.save_state()
