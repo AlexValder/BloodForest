@@ -47,6 +47,11 @@ func load_level(name: String) -> void:
     _game_started = true
 
 
+func restart_level() -> void:
+    var error := get_tree().reload_current_scene()
+    assert(error == OK, "Failed to restart the level")
+
+
 func quit_to_menu() -> void:
     _change_current_scene("main_menu", true)
     _game_started = false

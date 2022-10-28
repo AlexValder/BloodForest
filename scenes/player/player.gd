@@ -1,8 +1,9 @@
 class_name Player
 extends KinematicBody
 
-export var mouse_sensitivity := 0.001
-export var joy_sensitivity := 0.01
+export(float, 0.00001, 0.01) var mouse_sensitivity := 0.001
+export(float, 0.00001, 0.01) var joy_sensitivity := 0.01
+export(Resource) var health
 
 const DUCK_SPEED := 2.5
 const WALK_SPEED := 4.0
@@ -13,6 +14,8 @@ onready var _camera := $player_camera as PlayerCamera
 onready var _ray := $player_camera/arm as RayCast
 onready var _crosshair := $"%crosshair" as TextureRect
 onready var _inventory := $HUD/inventory as Inventory
+onready var _health_label := $"%health" as Label
+onready var _damage_rect := $"%damage" as ColorRect
 onready var _tween := $tween as Tween
 var _velocity := Vector3.ZERO
 var _snap_vector := Vector3.DOWN
@@ -41,11 +44,53 @@ func save_inventory() -> PoolIntArray:
 
 
 func clear_inventory() -> void:
-    _inventory.clear_inventory()
+    _inventory.clear_all()
 
 
 func _ready() -> void:
     _inventory.hide()
+
+    assert(health != null, "Health not set")
+    health.reset()
+    var error = health.connect("health_empty", self, "_on_death")
+    if error != OK:
+        push_error("Failed to connect _on_death")
+
+    _health_label.visible = OS.is_debug_build()
+
+    if _health_label.visible:
+        _health_label.text = "Health: %d" % health.current_value
+
+    error = health.connect("health_changed", self, "_on_health_change")
+    if error != OK:
+        push_error("Failed to connect _on_health_change")
+
+
+func _on_death() -> void:
+    _inventory.clear_all()
+    GameManager.restart_level()
+
+
+func _on_health_change(old: int, new: int) -> void:
+    _health_label.text = "Health: %d" % new
+
+    if old > new:
+        _damage_indicator(old - new, 210.0 / 255.0, 0, 0)
+    else:
+        _damage_indicator(new - old, 1, 1, 1)
+
+
+func _damage_indicator(diff: int, r: float, g: float, b: float) -> void:
+    if !_tween.stop(_damage_rect, "modulate:a"):
+        push_error("Failed to stop tween on _damage_rect")
+    _damage_rect.modulate.r = r
+    _damage_rect.modulate.g = g
+    _damage_rect.modulate.b = b
+    _damage_rect.modulate.a = float(2 * diff) / float(health.max_value)
+    if !_tween.interpolate_property(_damage_rect, "modulate:a", null, 0, .5):
+        push_error("Failed to interpolate property on _damage_rect")
+    if !_tween.start():
+        push_error("Failed to start tween on _damage_rect")
 
 
 func _speed() -> float:
@@ -70,6 +115,14 @@ func _unhandled_input(event: InputEvent) -> void:
         get_tree().set_input_as_handled()
         _inventory.show_inv()
 
+    if event is InputEventKey:
+        if event.is_pressed():
+            if event.scancode == KEY_Q:
+                get_tree().set_input_as_handled()
+                health.take_damage(3)
+            elif event.scancode == KEY_E:
+                get_tree().set_input_as_handled()
+                health.heal(3)
 
     if event.is_action_released("interact"):
         get_tree().set_input_as_handled()
@@ -87,8 +140,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func _tween_ducking(ducking: bool) -> void:
     _ducking = ducking
     get_tree().set_input_as_handled()
-    var success = _tween.stop_all()
-    assert(success, "Failed to stop_all on the tween")
+    var success = _tween.stop(self, "scale:y")
+    assert(success, "Failed to stop('scale:y') on the tween")
     success = _tween.interpolate_property(
         self, "scale:y", null, 0.5 if ducking else 1.0, 0.25,
         Tween.TRANS_CIRC, Tween.EASE_IN_OUT)

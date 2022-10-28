@@ -78,7 +78,7 @@ func remove_item(path: String) -> void:
         _desc.text = "I have nothing on me"
 
 
-func clear_inventory() -> void:
+func clear_all() -> void:
     _desc.text = "I have nothing on me"
     _items.clear()
     _list.clear()
@@ -103,7 +103,7 @@ func get_item_save() -> PoolIntArray:
 
 
 func load_from_list(list: PoolIntArray) -> void:
-    clear_inventory()
+    clear_all()
 
     for item in list:
         add_item_by_id(item)

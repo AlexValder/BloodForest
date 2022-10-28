@@ -21,8 +21,7 @@ func _on_resume_button_up() -> void:
 
 
 func _on_restart_button_up() -> void:
-    var error := get_tree().reload_current_scene()
-    assert(error == OK, "Failed to restart the level")
+    GameManager.restart_level()
     GameManager.set_pause(false)
 
 
