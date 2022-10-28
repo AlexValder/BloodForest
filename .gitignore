@@ -1,17 +1,27 @@
+# hidden IDE-specific/etc. folders & files
 .import/
 .idea/
-export.cfg
-export_presets.cfg
 *.translation
 .mono/
 .vs/
 data_*/
 *.user
 *.ini
-docs/
-build/
+export.cfg
+export_presets.cfg
+
+# wip/source resource data
 blender/
-settings.ini
-addons/
 *.kra
 *~
+
+# not for Git
+build/
+*.pdf
+
+# generated files
+settings.ini
+
+# installed addons
+addons/*
+!addons/interactable/
