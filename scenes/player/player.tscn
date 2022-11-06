@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://scenes/player/player.gd" type="Script" id=1]
 [ext_resource path="res://scenes/player/player_camera.gd" type="Script" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://assets/gui/hud/dot_icon.png" type="Texture" id=5]
 [ext_resource path="res://scenes/player/inventory.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scenes/player/player_state.gd" type="Script" id=7]
+[ext_resource path="res://scenes/player/debug_coords.gd" type="Script" id=8]
 
 [sub_resource type="Resource" id=4]
 script = ExtResource( 7 )
@@ -26,6 +27,8 @@ func _process(_delta: float) -> void:
 "
 
 [node name="player" type="KinematicBody"]
+input_ray_pickable = false
+collision/safe_margin = 0.01
 script = ExtResource( 1 )
 mouse_sensitivity = 0.005
 health = SubResource( 4 )
@@ -34,6 +37,7 @@ health = SubResource( 4 )
 transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 1.8, 0 )
 cull_mask = 1048573
 environment = ExtResource( 3 )
+current = true
 script = ExtResource( 2 )
 
 [node name="arm" type="RayCast" parent="player_camera"]
@@ -90,13 +94,86 @@ align = 2
 pause_mode = 2
 visible = false
 
-[node name="events" type="VBoxContainer" parent="HUD"]
-visible = false
+[node name="debug_coords" type="GridContainer" parent="HUD"]
+unique_name_in_owner = true
+anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 0
 grow_vertical = 0
+size_flags_horizontal = 8
+theme = ExtResource( 4 )
+columns = 2
+script = ExtResource( 8 )
+tracking = NodePath("../..")
+
+[node name="label00" type="Label" parent="HUD/debug_coords"]
+margin_right = 8.0
+margin_bottom = 13.0
+custom_colors/font_color = Color( 0, 0.156863, 1, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+text = "x:"
+align = 1
+valign = 1
+uppercase = true
+
+[node name="label01" type="Label" parent="HUD/debug_coords"]
+margin_left = 12.0
+margin_right = 18.0
+margin_bottom = 13.0
+custom_colors/font_color = Color( 0, 0.156863, 1, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+text = "0"
+align = 1
+valign = 1
+uppercase = true
+
+[node name="label02" type="Label" parent="HUD/debug_coords"]
+margin_top = 17.0
+margin_right = 8.0
+margin_bottom = 30.0
+custom_colors/font_color = Color( 0.364706, 0.960784, 0.278431, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+text = "y:"
+align = 1
+valign = 1
+uppercase = true
+
+[node name="label03" type="Label" parent="HUD/debug_coords"]
+margin_left = 12.0
+margin_top = 17.0
+margin_right = 18.0
+margin_bottom = 30.0
+custom_colors/font_color = Color( 0.364706, 0.960784, 0.278431, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+text = "0"
+align = 1
+valign = 1
+uppercase = true
+
+[node name="label04" type="Label" parent="HUD/debug_coords"]
+margin_top = 34.0
+margin_right = 8.0
+margin_bottom = 47.0
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+text = "z:"
+align = 1
+valign = 1
+uppercase = true
+
+[node name="label05" type="Label" parent="HUD/debug_coords"]
+margin_left = 12.0
+margin_top = 34.0
+margin_right = 18.0
+margin_bottom = 47.0
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
+text = "0"
+align = 1
+valign = 1
+uppercase = true
 
 [node name="damage" type="ColorRect" parent="HUD"]
 unique_name_in_owner = true

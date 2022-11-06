@@ -11,6 +11,8 @@ var _levels := [
     "main_menu",
     "debug_level",
     "intro",
+    "night1",
+    "terrain/whitebox",
    ]
 var _game_started := false
 var loading := false

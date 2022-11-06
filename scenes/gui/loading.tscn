@@ -36,27 +36,37 @@ alignment = 2
 
 [node name="tip" type="RichTextLabel" parent="vbox"]
 unique_name_in_owner = true
-margin_top = 199.0
-margin_right = 481.0
-margin_bottom = 213.0
+margin_top = 272.0
+margin_right = 721.0
+margin_bottom = 342.0
 bbcode_enabled = true
+bbcode_text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ
+йцукенгшщзхїфівапролджєячсмитьбю
+1234567890-=!\"№;%:?*()_+\\/[]{}<>`~"
+text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ
+йцукенгшщзхїфівапролджєячсмитьбю
+1234567890-=!\"№;%:?*()_+\\/[]{}<>`~"
 fit_content_height = true
 
 [node name="continue" type="Label" parent="vbox"]
 unique_name_in_owner = true
 material = SubResource( 1 )
-margin_top = 223.0
-margin_right = 481.0
-margin_bottom = 236.0
+margin_top = 352.0
+margin_right = 721.0
+margin_bottom = 365.0
 text = "Press any button to continue"
 align = 1
 valign = 1
 
 [node name="progress" type="ProgressBar" parent="vbox"]
 unique_name_in_owner = true
-margin_top = 246.0
-margin_right = 481.0
-margin_bottom = 259.0
+margin_top = 375.0
+margin_right = 721.0
+margin_bottom = 388.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 1

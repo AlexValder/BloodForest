@@ -44,6 +44,15 @@ func _exit_tree() -> void:
     save_state()
 
 
+func set_level_data(index: int, field: String, value) -> void:
+    print("Set at level %d field \"%s\" = %s", index, field, str(value))
+    assert(save.levels[index].has(field),
+        "Unknown field %s in level %d" % [field, index])
+    assert(index >= 0 && index < save.levels.size(),
+        "Index is out of bounds: %d" % index)
+    save.levels[index].field = value
+
+
 func _load_state() -> void:
     # TODO: verify that state is correct
     var file := File.new()

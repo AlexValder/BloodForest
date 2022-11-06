@@ -14,9 +14,6 @@ var _res: Resource = null
 
 func _enter_tree() -> void:
     visible = false
-
-
-func _ready() -> void:
     _tips = Database.get_loading()
 
 

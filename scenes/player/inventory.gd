@@ -3,7 +3,7 @@ class_name Inventory
 
 onready var _list := $"%list" as ItemList
 onready var _desc := $"%text" as Label
-onready var _viewport := $"%viewport" as InventoryViewport
+onready var _viewport := $"%viewport"# as InventoryViewport
 
 var _items: Array
 

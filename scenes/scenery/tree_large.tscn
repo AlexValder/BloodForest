@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/materials/Wood_5.material" type="Material" id=1]
 [ext_resource path="res://assets/materials/Branch_6.material" type="Material" id=2]
@@ -32,6 +32,16 @@ surfaces/1 = {
 "vertex_count": 584
 }
 
+[sub_resource type="CylinderShape" id=9]
+height = 0.153741
+radius = 0.00663187
+
 [node name="tree_large" type="MeshInstance"]
 transform = Transform( 100, 0, 0, 0, -3.57628e-05, 100, 0, -100, -3.57628e-05, 0, 0.043, 0 )
 mesh = SubResource( 8 )
+
+[node name="StaticBody" type="StaticBody" parent="."]
+
+[node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -3.17509e-09, 0.0726372 )
+shape = SubResource( 9 )

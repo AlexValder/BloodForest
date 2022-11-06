@@ -24,6 +24,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/dialogue_manager/dialogue_resource.gd"
 }, {
+"base": "ResourceFormatLoader",
+"class": "HTerrainDataLoader",
+"language": "GDScript",
+"path": "res://addons/zylann.hterrain/hterrain_resource_loader.gd"
+}, {
+"base": "ResourceFormatSaver",
+"class": "HTerrainDataSaver",
+"language": "GDScript",
+"path": "res://addons/zylann.hterrain/hterrain_resource_saver.gd"
+}, {
 "base": "Resource",
 "class": "Health",
 "language": "GDScript",
@@ -43,6 +53,31 @@ _global_script_classes=[ {
 "class": "InventoryViewport",
 "language": "GDScript",
 "path": "res://scenes/player/inv_viewport.gd"
+}, {
+"base": "CPUParticles",
+"class": "LODCPUParticles",
+"language": "GDScript",
+"path": "res://addons/lod/lod_cpu_particles.gd"
+}, {
+"base": "OmniLight",
+"class": "LODOmniLight",
+"language": "GDScript",
+"path": "res://addons/lod/lod_omni_light.gd"
+}, {
+"base": "Particles",
+"class": "LODParticles",
+"language": "GDScript",
+"path": "res://addons/lod/lod_particles.gd"
+}, {
+"base": "Spatial",
+"class": "LODSpatial",
+"language": "GDScript",
+"path": "res://addons/lod/lod_spatial.gd"
+}, {
+"base": "SpotLight",
+"class": "LODSpotLight",
+"language": "GDScript",
+"path": "res://addons/lod/lod_spot_light.gd"
 }, {
 "base": "Control",
 "class": "LoadingScreen",
@@ -73,10 +108,17 @@ _global_script_class_icons={
 "BaseLevel": "",
 "DescBalloon": "",
 "DialogueResource": "",
+"HTerrainDataLoader": "",
+"HTerrainDataSaver": "",
 "Health": "",
 "InterArea": "",
 "Inventory": "",
 "InventoryViewport": "",
+"LODCPUParticles": "res://addons/lod/lod_cpu_particles.svg",
+"LODOmniLight": "res://addons/lod/lod_omni_light.svg",
+"LODParticles": "res://addons/lod/lod_particles.svg",
+"LODSpatial": "res://addons/lod/lod_spatial.svg",
+"LODSpotLight": "res://addons/lod/lod_spot_light.svg",
 "LoadingScreen": "",
 "MainMenu": "",
 "PauseMenu": "",
@@ -107,8 +149,8 @@ Database="*res://scripts/singletons/db_wrapper.gd"
 
 [display]
 
-window/size/width=512
-window/size/height=288
+window/size/width=768
+window/size/height=432
 window/size/resizable=false
 window/vsync/use_vsync=false
 window/stretch/mode="viewport"
@@ -116,7 +158,7 @@ window/stretch/aspect="keep_height"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Todo_Manager/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/godot-sqlite/plugin.cfg", "res://addons/interactable/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Todo_Manager/plugin.cfg", "res://addons/dialogue_manager/plugin.cfg", "res://addons/godot-sqlite/plugin.cfg", "res://addons/interactable/plugin.cfg", "res://addons/lod/plugin.cfg", "res://addons/zylann.hterrain/plugin.cfg" )
 
 [global]
 

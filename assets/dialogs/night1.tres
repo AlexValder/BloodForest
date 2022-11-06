@@ -1,0 +1,29 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://addons/dialogue_manager/dialogue_resource.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+resource_version = 4
+syntax_version = 2
+raw_text = "~ grave
+Unmarked grave. Who could be buried there?"
+errors = [  ]
+titles = {
+"grave": "1"
+}
+lines = {
+"0": {
+"next_id": "1",
+"text": "grave",
+"type": "title"
+},
+"1": {
+"character": "",
+"next_id": "",
+"replacements": [  ],
+"text": "Unmarked grave. Who could be buried there?",
+"translation_key": "Unmarked grave. Who could be buried there?",
+"type": "dialogue"
+}
+}

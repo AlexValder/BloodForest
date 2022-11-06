@@ -3,6 +3,6 @@
 [ext_resource path="res://assets/gui/fonts/PixelNewspaperIII.ttf" type="DynamicFontData" id=1]
 
 [resource]
-size = 32
+size = 48
 extra_spacing_top = 8
 font_data = ExtResource( 1 )
