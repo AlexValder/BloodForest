@@ -5,7 +5,7 @@
 [ext_resource path="res://assets/textures/scenery/plain_textures/Rock.jpg" type="Texture" id=3]
 [ext_resource path="res://scenes/levels/debug_level.gd" type="Script" id=4]
 [ext_resource path="res://addons/interactable/inter_area.gd" type="Script" id=5]
-[ext_resource path="res://scenes/items/hunting_rifle.tscn" type="PackedScene" id=6]
+[ext_resource path="res://scenes/items/shotgun.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scenes/items/water_bottle.tscn" type="PackedScene" id=7]
 [ext_resource path="res://scenes/items/lighter.tscn" type="PackedScene" id=8]
 [ext_resource path="res://assets/gui/fonts/PixelNewspaperIII.tres" type="DynamicFont" id=9]
@@ -394,10 +394,11 @@ collision_layer = 2
 collision_mask = 2
 monitoring = false
 script = ExtResource( 5 )
-title = "hunting_rifle"
+title = "shotgun"
 type = 3
 
-[node name="hunting_rifle" parent="inter_geom/pedestal4/InterArea" instance=ExtResource( 6 )]
+[node name="shotgun" parent="inter_geom/pedestal4/InterArea" instance=ExtResource( 6 )]
+transform = Transform( -2.18557e-08, 2.18557e-08, -0.5, -2.18557e-08, 0.5, 2.18557e-08, 0.5, 2.18557e-08, -2.18557e-08, 0, 0, 0.0199534 )
 
 [node name="shape" type="CollisionShape" parent="inter_geom/pedestal4/InterArea"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0.193288, -0.059464, 0 )

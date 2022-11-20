@@ -21,7 +21,7 @@ func _red_button(_obj: InterArea, _title: String) -> void:
 
     _player.clear_inventory()
     _restore_item(
-        "res://scenes/items/hunting_rifle.tscn",
+        "res://scenes/items/shotgun.tscn",
         $inter_geom/pedestal4/InterArea as InterArea)
     _restore_item(
         "res://scenes/items/water_bottle.tscn",

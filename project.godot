@@ -14,6 +14,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scripts/base_level.gd"
 }, {
+"base": "RichTextLabel",
+"class": "CreditLine",
+"language": "GDScript",
+"path": "res://scenes/levels/credits/credit_line.gd"
+}, {
+"base": "Node",
+"class": "Credits",
+"language": "GDScript",
+"path": "res://scenes/levels/credits/credits.gd"
+}, {
 "base": "CanvasLayer",
 "class": "DescBalloon",
 "language": "GDScript",
@@ -106,6 +116,8 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "BaseLevel": "",
+"CreditLine": "",
+"Credits": "",
 "DescBalloon": "",
 "DialogueResource": "",
 "HTerrainDataLoader": "",
