@@ -1,0 +1,44 @@
+[
+	[
+		"BloodForest",
+		"a game by AlexValder"
+	],
+	[
+		"Programming, Writing, Story",
+		"AlexValder"
+	],
+	[
+		"Assets",
+		"m5x7 by Daniel Linssen (itch.io)",
+		"PixelNewspaperIII by theonewhoboondoggles (Nb Pixel Font Bundle 2 on itch.io)",
+		"Goathe by KreativeKorp",
+		"Retro PSX Nature Pack by Elegant Crow (itch.io)",
+		"PSX Forest Asset Collection by Stark Crafts (itch.io)",
+		"Survival PSX by Elbolillo (sketchfab.com)",
+		"Roads by Elbolillo (sketchfab.com)",
+		"Textures from www.textures.com",
+		"Survival PSX by Elbolilloduro (itch.io)",
+		"Wood texture (CC0) : https://ambientcg.com/view?id=Wood013",
+		"White part texture (CC0) : https://ambientcg.com/view?id=PaintedPlaster017",
+		"Barrel texture (CC0) : https://ambientcg.com/view?id=Leather026",
+		"Shell texture (CC0) : https://pixabay.com/photos/hunting-ammo-bullets-sleeves-ammo-1493486/",
+		"Sinister skybox by vladislavzh (Retro Skyboxes Pack on opengameart.com)",
+		"Tiny Texture Pack by Screaming Brain Studios (itch.io)",
+		"Tiny Texture Pack 2 by Screaming Brain Studios (itch.io)",
+		"UI Buttons by Kicked-in-Teeth (itch.io)",
+		"VGM Atmospheric Air by N91Music (itch.io)",
+		"Some assets are under CC0 or other Creative Commons licenses.",
+		"Please check the respectable assets page to learn more"
+	],
+	[
+		"Plugins",
+		"Heightmap Terrain by Marc Gilleron",
+		"Level of Detail (LOD) by Calinou",
+		"Godot SQLite by Piet Bronders & Jeroen De Geeter",
+		"Dialogue Manager by Nathan Hoad"
+	],
+	[
+		"Tools",
+		"Godot Engine"
+	]
+]

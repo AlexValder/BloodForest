@@ -1,7 +1,7 @@
 extends BaseLevel
 
-onready var _button := $reset_button/button as Spatial
-onready var _timer := $reset_button/timer as Timer
+onready var _button := $inter_geom/reset_button/button as Spatial
+onready var _timer := $inter_geom/reset_button/timer as Timer
 
 
 func _ready() -> void:
@@ -21,14 +21,14 @@ func _red_button(_obj: InterArea, _title: String) -> void:
 
     _player.clear_inventory()
     _restore_item(
-        "res://scenes/items/hunting_rifle.tscn",
-        $pedestal4/InterArea as InterArea)
+        "res://scenes/items/shotgun.tscn",
+        $inter_geom/pedestal4/InterArea as InterArea)
     _restore_item(
         "res://scenes/items/water_bottle.tscn",
-        $pedestal5/InterArea as InterArea)
+        $inter_geom/pedestal5/InterArea as InterArea)
     _restore_item(
         "res://scenes/items/lighter.tscn",
-        $pedestal6/InterArea as InterArea)
+        $inter_geom/pedestal6/InterArea as InterArea)
 
     _in_dialog = false
 

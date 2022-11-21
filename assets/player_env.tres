@@ -1,6 +1,6 @@
 [gd_resource type="Environment" load_steps=3 format=2]
 
-[ext_resource path="res://assets/textures/skybox/sinister_panorama.png" type="Texture" id=1]
+[ext_resource path="res://assets/textures/skybox/sinister_land_panorama.png" type="Texture" id=1]
 
 [sub_resource type="PanoramaSky" id=7]
 panorama = ExtResource( 1 )
@@ -11,11 +11,11 @@ background_sky = SubResource( 7 )
 ambient_light_color = Color( 1, 1, 1, 1 )
 ambient_light_energy = 0.4
 ambient_light_sky_contribution = 0.0
-fog_color = Color( 0, 0, 0, 1 )
+fog_enabled = true
+fog_color = Color( 0.00392157, 0.00392157, 0.0196078, 1 )
 fog_sun_color = Color( 0.811765, 0.968627, 1, 1 )
-fog_depth_begin = 5.0
-fog_depth_end = 20.0
-fog_depth_curve = 0.707107
-fog_transmit_curve = 1.36604
-fog_height_min = 0.5
-fog_height_curve = 8.0
+fog_depth_begin = 70.0
+fog_depth_end = 150.0
+fog_depth_curve = 0.258816
+fog_transmit_enabled = true
+fog_height_enabled = true

@@ -1,11 +1,11 @@
-[gd_scene load_steps=52 format=2]
+[gd_scene load_steps=57 format=2]
 
 [ext_resource path="res://scenes/player/player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://assets/textures/scenery/plain_textures/ground01.png" type="Texture" id=2]
 [ext_resource path="res://assets/textures/scenery/plain_textures/Rock.jpg" type="Texture" id=3]
 [ext_resource path="res://scenes/levels/debug_level.gd" type="Script" id=4]
 [ext_resource path="res://addons/interactable/inter_area.gd" type="Script" id=5]
-[ext_resource path="res://scenes/items/hunting_rifle.tscn" type="PackedScene" id=6]
+[ext_resource path="res://scenes/items/shotgun.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scenes/items/water_bottle.tscn" type="PackedScene" id=7]
 [ext_resource path="res://scenes/items/lighter.tscn" type="PackedScene" id=8]
 [ext_resource path="res://assets/gui/fonts/PixelNewspaperIII.tres" type="DynamicFont" id=9]
@@ -36,6 +36,29 @@ data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1
 
 [sub_resource type="ConcavePolygonShape" id=9]
 data = PoolVector3Array( -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1 )
+
+[sub_resource type="OpenSimplexNoise" id=50]
+period = 3.5
+persistence = 0.0
+lacunarity = 4.0
+
+[sub_resource type="NoiseTexture" id=51]
+seamless = true
+noise = SubResource( 50 )
+
+[sub_resource type="SpatialMaterial" id=52]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.490196, 0.490196, 0.490196, 1 )
+albedo_texture = SubResource( 51 )
+
+[sub_resource type="PrismMesh" id=49]
+material = SubResource( 52 )
+left_to_right = 1.0
+size = Vector3( 10, 4, 2 )
+
+[sub_resource type="ConcavePolygonShape" id=53]
+data = PoolVector3Array( 5, 2, 1, 5, -2, 1, -5, -2, 1, 5, 2, -1, -5, -2, -1, 5, -2, -1, 5, 2, 1, 5, 2, -1, 5, -2, 1, 5, 2, -1, 5, -2, -1, 5, -2, 1, 5, 2, -1, 5, 2, 1, -5, -2, -1, 5, 2, 1, -5, -2, 1, -5, -2, -1, -5, -2, 1, 5, -2, 1, -5, -2, -1, 5, -2, 1, 5, -2, -1, -5, -2, -1 )
 
 [sub_resource type="OpenSimplexNoise" id=11]
 octaves = 5
@@ -213,66 +236,86 @@ radius = 0.291122
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.50484, 0 )
 script = ExtResource( 4 )
 
-[node name="floor" type="MeshInstance" parent="."]
+[node name="static_geom" type="Spatial" parent="."]
+
+[node name="floor" type="MeshInstance" parent="static_geom"]
 transform = Transform( 10, 0, 0, 0, 0.05, 0, 0, 0, 10, 0, 0, 0 )
 mesh = SubResource( 1 )
+skeleton = NodePath("../..")
 material/0 = SubResource( 10 )
 
-[node name="StaticBody" type="StaticBody" parent="floor"]
+[node name="StaticBody" type="StaticBody" parent="static_geom/floor"]
+input_ray_pickable = false
 
-[node name="CollisionShape" type="CollisionShape" parent="floor/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="static_geom/floor/StaticBody"]
 shape = SubResource( 4 )
 
-[node name="wal_x_+" type="MeshInstance" parent="."]
+[node name="wal_x_+" type="MeshInstance" parent="static_geom"]
 transform = Transform( 0.05, 0, 0, 0, 4, 0, 0, 0, 10, 10, 2, 0 )
 mesh = SubResource( 1 )
+skeleton = NodePath("../..")
 material/0 = SubResource( 5 )
 
-[node name="StaticBody" type="StaticBody" parent="wal_x_+"]
+[node name="StaticBody" type="StaticBody" parent="static_geom/wal_x_+"]
 
-[node name="CollisionShape" type="CollisionShape" parent="wal_x_+/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="static_geom/wal_x_+/StaticBody"]
 shape = SubResource( 6 )
 
-[node name="wal_x_-" type="MeshInstance" parent="."]
+[node name="wal_x_-" type="MeshInstance" parent="static_geom"]
 transform = Transform( 0.05, 0, 0, 0, 4, 0, 0, 0, 10, -10, 2, 0 )
 mesh = SubResource( 1 )
+skeleton = NodePath("../..")
 material/0 = SubResource( 5 )
 
-[node name="StaticBody" type="StaticBody" parent="wal_x_-"]
+[node name="StaticBody" type="StaticBody" parent="static_geom/wal_x_-"]
 
-[node name="CollisionShape" type="CollisionShape" parent="wal_x_-/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="static_geom/wal_x_-/StaticBody"]
 shape = SubResource( 7 )
 
-[node name="wal_z_+" type="MeshInstance" parent="."]
+[node name="wal_z_+" type="MeshInstance" parent="static_geom"]
 transform = Transform( 10, 0, 0, 0, 4, 0, 0, 0, 0.05, 0, 2, 10 )
 mesh = SubResource( 1 )
+skeleton = NodePath("../..")
 material/0 = SubResource( 5 )
 
-[node name="StaticBody" type="StaticBody" parent="wal_z_+"]
+[node name="StaticBody" type="StaticBody" parent="static_geom/wal_z_+"]
 
-[node name="CollisionShape" type="CollisionShape" parent="wal_z_+/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="static_geom/wal_z_+/StaticBody"]
 shape = SubResource( 8 )
 
-[node name="wal_z_-" type="MeshInstance" parent="."]
+[node name="wal_z_-" type="MeshInstance" parent="static_geom"]
 transform = Transform( 10, 0, 0, 0, 4, 0, 0, 0, 0.05, 0, 2, -10 )
 mesh = SubResource( 1 )
+skeleton = NodePath("../..")
 material/0 = SubResource( 5 )
 
-[node name="StaticBody" type="StaticBody" parent="wal_z_-"]
+[node name="StaticBody" type="StaticBody" parent="static_geom/wal_z_-"]
 
-[node name="CollisionShape" type="CollisionShape" parent="wal_z_-/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="static_geom/wal_z_-/StaticBody"]
 shape = SubResource( 9 )
 
-[node name="pedestal1" type="MeshInstance" parent="."]
+[node name="slope" type="MeshInstance" parent="static_geom"]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 3.02559, 0, 5.37743 )
+mesh = SubResource( 49 )
+
+[node name="StaticBody" type="StaticBody" parent="static_geom/slope"]
+
+[node name="CollisionShape" type="CollisionShape" parent="static_geom/slope/StaticBody"]
+shape = SubResource( 53 )
+
+[node name="inter_geom" type="Spatial" parent="."]
+
+[node name="pedestal1" type="MeshInstance" parent="inter_geom"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.292, 0.5, -5.509 )
 mesh = SubResource( 14 )
+skeleton = NodePath("../..")
 
-[node name="StaticBody" type="StaticBody" parent="pedestal1"]
+[node name="StaticBody" type="StaticBody" parent="inter_geom/pedestal1"]
 
-[node name="CollisionShape" type="CollisionShape" parent="pedestal1/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="inter_geom/pedestal1/StaticBody"]
 shape = SubResource( 15 )
 
-[node name="area" type="Area" parent="pedestal1"]
+[node name="area" type="Area" parent="inter_geom/pedestal1"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
 collision_layer = 2
 collision_mask = 2
@@ -281,23 +324,24 @@ script = ExtResource( 5 )
 title = "red_orb"
 type = 1
 
-[node name="orb" type="MeshInstance" parent="pedestal1/area"]
+[node name="orb" type="MeshInstance" parent="inter_geom/pedestal1/area"]
 mesh = SubResource( 19 )
 skeleton = NodePath("../..")
 
-[node name="shape" type="CollisionShape" parent="pedestal1/area"]
+[node name="shape" type="CollisionShape" parent="inter_geom/pedestal1/area"]
 shape = SubResource( 22 )
 
-[node name="pedestal2" type="MeshInstance" parent="."]
+[node name="pedestal2" type="MeshInstance" parent="inter_geom"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.195436, 0.5, -5.509 )
 mesh = SubResource( 14 )
+skeleton = NodePath("../..")
 
-[node name="StaticBody" type="StaticBody" parent="pedestal2"]
+[node name="StaticBody" type="StaticBody" parent="inter_geom/pedestal2"]
 
-[node name="CollisionShape" type="CollisionShape" parent="pedestal2/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="inter_geom/pedestal2/StaticBody"]
 shape = SubResource( 15 )
 
-[node name="area" type="Area" parent="pedestal2"]
+[node name="area" type="Area" parent="inter_geom/pedestal2"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
 collision_layer = 2
 collision_mask = 2
@@ -306,23 +350,24 @@ script = ExtResource( 5 )
 title = "green_orb"
 type = 1
 
-[node name="orb" type="MeshInstance" parent="pedestal2/area"]
+[node name="orb" type="MeshInstance" parent="inter_geom/pedestal2/area"]
 mesh = SubResource( 24 )
 skeleton = NodePath("../..")
 
-[node name="shape" type="CollisionShape" parent="pedestal2/area"]
+[node name="shape" type="CollisionShape" parent="inter_geom/pedestal2/area"]
 shape = SubResource( 22 )
 
-[node name="pedestal3" type="MeshInstance" parent="."]
+[node name="pedestal3" type="MeshInstance" parent="inter_geom"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.70812, 0.5, -5.509 )
 mesh = SubResource( 14 )
+skeleton = NodePath("../..")
 
-[node name="StaticBody" type="StaticBody" parent="pedestal3"]
+[node name="StaticBody" type="StaticBody" parent="inter_geom/pedestal3"]
 
-[node name="CollisionShape" type="CollisionShape" parent="pedestal3/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="inter_geom/pedestal3/StaticBody"]
 shape = SubResource( 15 )
 
-[node name="area" type="Area" parent="pedestal3"]
+[node name="area" type="Area" parent="inter_geom/pedestal3"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0221, 0 )
 collision_layer = 2
 collision_mask = 2
@@ -331,42 +376,45 @@ script = ExtResource( 5 )
 title = "blue_orb"
 type = 1
 
-[node name="orb" type="MeshInstance" parent="pedestal3/area"]
+[node name="orb" type="MeshInstance" parent="inter_geom/pedestal3/area"]
 mesh = SubResource( 26 )
 skeleton = NodePath("../..")
 
-[node name="shape" type="CollisionShape" parent="pedestal3/area"]
+[node name="shape" type="CollisionShape" parent="inter_geom/pedestal3/area"]
 shape = SubResource( 22 )
 
-[node name="pedestal4" type="MeshInstance" parent="."]
+[node name="pedestal4" type="MeshInstance" parent="inter_geom"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.10562, 0.5, -7.30361 )
 mesh = SubResource( 27 )
+skeleton = NodePath("../..")
 
-[node name="InterArea" type="Area" parent="pedestal4"]
+[node name="InterArea" type="Area" parent="inter_geom/pedestal4"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.627947, 0 )
 collision_layer = 2
 collision_mask = 2
 monitoring = false
 script = ExtResource( 5 )
-title = "hunting_rifle"
+title = "shotgun"
 type = 3
 
-[node name="hunting_rifle" parent="pedestal4/InterArea" instance=ExtResource( 6 )]
+[node name="shotgun" parent="inter_geom/pedestal4/InterArea" instance=ExtResource( 6 )]
+transform = Transform( -2.18557e-08, 2.18557e-08, -0.5, -2.18557e-08, 0.5, 2.18557e-08, 0.5, 2.18557e-08, -2.18557e-08, 0, 0, 0.0199534 )
 
-[node name="shape" type="CollisionShape" parent="pedestal4/InterArea"]
+[node name="shape" type="CollisionShape" parent="inter_geom/pedestal4/InterArea"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0.193288, -0.059464, 0 )
 shape = SubResource( 31 )
 
-[node name="StaticBody" type="StaticBody" parent="pedestal4"]
+[node name="StaticBody" type="StaticBody" parent="inter_geom/pedestal4"]
 
-[node name="CollisionShape" type="CollisionShape" parent="pedestal4/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="inter_geom/pedestal4/StaticBody"]
 shape = SubResource( 30 )
 
-[node name="pedestal5" type="MeshInstance" parent="."]
+[node name="pedestal5" type="MeshInstance" parent="inter_geom"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6167, 0.5, -7.30361 )
 mesh = SubResource( 27 )
+skeleton = NodePath("../..")
 
-[node name="InterArea" type="Area" parent="pedestal5"]
+[node name="InterArea" type="Area" parent="inter_geom/pedestal5"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.671183, 0 )
 collision_layer = 2
 collision_mask = 2
@@ -375,22 +423,23 @@ script = ExtResource( 5 )
 title = "water_bottle"
 type = 3
 
-[node name="water_bottle" parent="pedestal5/InterArea" instance=ExtResource( 7 )]
+[node name="water_bottle" parent="inter_geom/pedestal5/InterArea" instance=ExtResource( 7 )]
 
-[node name="shape" type="CollisionShape" parent="pedestal5/InterArea"]
+[node name="shape" type="CollisionShape" parent="inter_geom/pedestal5/InterArea"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.204576, 0 )
 shape = SubResource( 32 )
 
-[node name="StaticBody" type="StaticBody" parent="pedestal5"]
+[node name="StaticBody" type="StaticBody" parent="inter_geom/pedestal5"]
 
-[node name="CollisionShape" type="CollisionShape" parent="pedestal5/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="inter_geom/pedestal5/StaticBody"]
 shape = SubResource( 30 )
 
-[node name="pedestal6" type="MeshInstance" parent="."]
+[node name="pedestal6" type="MeshInstance" parent="inter_geom"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.40828, 0.5, -7.30361 )
 mesh = SubResource( 27 )
+skeleton = NodePath("../..")
 
-[node name="InterArea" type="Area" parent="pedestal6"]
+[node name="InterArea" type="Area" parent="inter_geom/pedestal6"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.623644, 0.0407271 )
 collision_layer = 2
 collision_mask = 2
@@ -399,25 +448,25 @@ script = ExtResource( 5 )
 title = "lighter"
 type = 3
 
-[node name="lighter" parent="pedestal6/InterArea" instance=ExtResource( 8 )]
+[node name="lighter" parent="inter_geom/pedestal6/InterArea" instance=ExtResource( 8 )]
 
-[node name="shape" type="CollisionShape" parent="pedestal6/InterArea"]
+[node name="shape" type="CollisionShape" parent="inter_geom/pedestal6/InterArea"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0294251, 0.056488, 0.00394416 )
 shape = SubResource( 33 )
 
-[node name="StaticBody" type="StaticBody" parent="pedestal6"]
+[node name="StaticBody" type="StaticBody" parent="inter_geom/pedestal6"]
 
-[node name="CollisionShape" type="CollisionShape" parent="pedestal6/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="inter_geom/pedestal6/StaticBody"]
 shape = SubResource( 30 )
 
-[node name="reset_button" type="Spatial" parent="."]
+[node name="reset_button" type="Spatial" parent="inter_geom"]
 transform = Transform( -1, 1.50996e-07, 6.60024e-15, 0, -4.37114e-08, 1, 1.50996e-07, 1, 4.37114e-08, -1.339, 2.257, -9.9 )
 
-[node name="button" type="MeshInstance" parent="reset_button"]
+[node name="button" type="MeshInstance" parent="inter_geom/reset_button"]
 mesh = SubResource( 34 )
-skeleton = NodePath("../..")
+skeleton = NodePath("../../..")
 
-[node name="InterArea" type="Area" parent="reset_button/button"]
+[node name="InterArea" type="Area" parent="inter_geom/reset_button/button"]
 collision_layer = 2
 collision_mask = 2
 monitoring = false
@@ -425,15 +474,15 @@ script = ExtResource( 5 )
 title = "red_button"
 type = 2
 
-[node name="shape" type="CollisionShape" parent="reset_button/button/InterArea"]
+[node name="shape" type="CollisionShape" parent="inter_geom/reset_button/button/InterArea"]
 shape = SubResource( 38 )
 
-[node name="text" type="MeshInstance" parent="reset_button"]
+[node name="text" type="MeshInstance" parent="inter_geom/reset_button"]
 transform = Transform( -1, 8.74228e-08, 1.42109e-14, 0, -4.37114e-08, 1, 8.74228e-08, 1, 4.37114e-08, 0, -0.0321045, 0.5 )
 mesh = SubResource( 39 )
 skeleton = NodePath("../button")
 
-[node name="timer" type="Timer" parent="reset_button"]
+[node name="timer" type="Timer" parent="inter_geom/reset_button"]
 wait_time = 0.5
 one_shot = true
 
@@ -464,11 +513,11 @@ shape = SubResource( 42 )
 [node name="player" parent="." instance=ExtResource( 1 )]
 transform = Transform( -1, 0, 1.50996e-07, 0, 1, 0, -1.50996e-07, 0, -1, 0, 0, 0 )
 
-[connection signal="interacted" from="pedestal1/area" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal2/area" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal3/area" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal4/InterArea" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal5/InterArea" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="pedestal6/InterArea" to="." method="_on_area_interacted"]
-[connection signal="interacted" from="reset_button/button/InterArea" to="." method="_on_area_interacted"]
-[connection signal="timeout" from="reset_button/timer" to="." method="_on_red_button_timer_timeout"]
+[connection signal="interacted" from="inter_geom/pedestal1/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="inter_geom/pedestal2/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="inter_geom/pedestal3/area" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="inter_geom/pedestal4/InterArea" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="inter_geom/pedestal5/InterArea" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="inter_geom/pedestal6/InterArea" to="." method="_on_area_interacted"]
+[connection signal="interacted" from="inter_geom/reset_button/button/InterArea" to="." method="_on_area_interacted"]
+[connection signal="timeout" from="inter_geom/reset_button/timer" to="." method="_on_red_button_timer_timeout"]

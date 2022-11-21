@@ -11,6 +11,9 @@ var _levels := [
     "main_menu",
     "debug_level",
     "intro",
+    "night1",
+    "terrain/whitebox",
+    "credits",
    ]
 var _game_started := false
 var loading := false
@@ -45,6 +48,15 @@ func load_level(name: String) -> void:
 
     _change_current_scene(name)
     _game_started = true
+
+
+func show_credits() -> void:
+    var curr_scene := get_tree().current_scene
+    var credits :=\
+        preload("res://scenes/levels/credits/credits.tscn") as PackedScene
+    var error := get_tree().change_scene_to(credits)
+    assert(error == OK, "Failed to enter loaded credits")
+    curr_scene.queue_free()
 
 
 func restart_level() -> void:

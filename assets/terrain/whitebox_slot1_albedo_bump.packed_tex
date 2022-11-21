@@ -1,0 +1,8 @@
+{
+	"contains_albedo": true,
+	"resolution": 256,
+	"src": {
+		"a": "#ff888888",
+		"rgb": "res://assets/textures/scenery/plain_textures/dirt01.png"
+	}
+}

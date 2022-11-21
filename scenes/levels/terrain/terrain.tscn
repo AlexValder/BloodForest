@@ -1,0 +1,2161 @@
+[gd_scene load_steps=59 format=2]
+
+[ext_resource path="res://assets/textures/scenery/plain_textures/wooden_basement_1.png" type="Texture" id=1]
+[ext_resource path="res://scenes/levels/terrain/whitebox_slot0_albedo_bump.packed_tex" type="Texture" id=2]
+[ext_resource path="res://scenes/levels/terrain/whitebox_slot2_normal_roughness.packed_tex" type="Texture" id=3]
+[ext_resource path="res://assets/textures/scenery/plain_textures/stone01.png" type="Texture" id=4]
+[ext_resource path="res://scenes/levels/terrain/whitebox_slot1_normal_roughness.packed_tex" type="Texture" id=5]
+[ext_resource path="res://scenes/levels/terrain/whitebox_slot0_normal_roughness.packed_tex" type="Texture" id=6]
+[ext_resource path="res://scenes/levels/terrain/whitebox_slot1_albedo_bump.packed_tex" type="Texture" id=7]
+[ext_resource path="res://scenes/levels/terrain/whitebox_slot3_albedo_bump.packed_tex" type="Texture" id=8]
+[ext_resource path="res://scenes/levels/terrain/whitebox_slot3_normal_roughness.packed_tex" type="Texture" id=9]
+[ext_resource path="res://assets/materials/Wood_5.material" type="Material" id=10]
+[ext_resource path="res://assets/materials/Branch_6.material" type="Material" id=11]
+[ext_resource path="res://assets/terrain/data.hterrain" type="Resource" id=12]
+[ext_resource path="res://addons/lod/lod_spatial.gd" type="Script" id=13]
+[ext_resource path="res://scenes/scenery/tree_large.tscn" type="PackedScene" id=14]
+[ext_resource path="res://scenes/scenery/house3.tscn" type="PackedScene" id=15]
+[ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=16]
+[ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=17]
+[ext_resource path="res://assets/textures/scenery/plain_textures/ground01.png" type="Texture" id=18]
+[ext_resource path="res://addons/interactable/inter_area.gd" type="Script" id=19]
+
+[sub_resource type="Shader" id=39]
+code = "// NOTE: Shader automatically converted from Godot Engine 3.5.stable's SpatialMaterial.
+
+shader_type spatial;
+render_mode async_visible,blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+uniform vec4 albedo : hint_color;
+uniform sampler2D texture_albedo : hint_albedo;
+uniform float specular;
+uniform float metallic;
+uniform float distance_fade_min;
+uniform float distance_fade_max;
+uniform float roughness : hint_range(0,1);
+uniform float point_size : hint_range(0,128);
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+
+void vertex() {
+	UV=UV*uv1_scale.xy+uv1_offset.xy;
+}
+
+
+
+
+void fragment() {
+	vec2 base_uv = UV;
+	vec4 albedo_tex = texture(texture_albedo,base_uv);
+	albedo_tex *= COLOR;
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+	METALLIC = metallic;
+	ROUGHNESS = roughness;
+	SPECULAR = specular;
+	ALPHA = albedo.a * albedo_tex.a;
+	ALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);
+}
+"
+
+[sub_resource type="ShaderMaterial" id=40]
+shader = SubResource( 39 )
+shader_param/albedo = Color( 0.54902, 0.54902, 0.54902, 1 )
+shader_param/specular = 0.5
+shader_param/metallic = 0.0
+shader_param/distance_fade_min = 150.0
+shader_param/distance_fade_max = 95.0
+shader_param/roughness = 1.0
+shader_param/point_size = 1.0
+shader_param/uv1_scale = Vector3( 100, 100, 0 )
+shader_param/uv1_offset = Vector3( 0, 0, 0 )
+shader_param/uv2_scale = Vector3( 1, 1, 1 )
+shader_param/uv2_offset = Vector3( 0, 0, 0 )
+shader_param/texture_albedo = ExtResource( 18 )
+
+[sub_resource type="QuadMesh" id=2]
+material = SubResource( 40 )
+size = Vector2( 500, 500 )
+
+[sub_resource type="Shader" id=38]
+code = "shader_type spatial;
+render_mode async_visible,blend_mix,depth_draw_opaque,diffuse_burley,specular_schlick_ggx;
+
+uniform vec4 albedo : hint_color;
+// This is the reference shader of the plugin, and has the most features.
+// it should be preferred for high-end graphics cards.
+// For less features but lower-end targets, see the lite version.
+
+uniform sampler2D u_terrain_heightmap;
+uniform sampler2D u_terrain_normalmap;
+// I had to remove `hint_albedo` from colormap because it makes sRGB conversion kick in,
+// which snowballs to black when doing GPU painting on that texture...
+uniform sampler2D u_terrain_colormap;
+uniform sampler2D u_terrain_splatmap;
+uniform sampler2D u_terrain_globalmap : hint_albedo;
+uniform mat4 u_terrain_inverse_transform;
+uniform mat3 u_terrain_normal_basis;
+
+// the reason bump is preferred with albedo is, roughness looks better with normal maps.
+// If we want no normal mapping, roughness would only give flat mirror surfaces,
+// while bump still allows to do depth-blending for free.
+uniform sampler2D u_ground_albedo_bump_0 : hint_albedo;
+uniform sampler2D u_ground_albedo_bump_1 : hint_albedo;
+uniform sampler2D u_ground_albedo_bump_2 : hint_albedo;
+uniform sampler2D u_ground_albedo_bump_3 : hint_albedo;
+
+uniform sampler2D u_ground_normal_roughness_0;
+uniform sampler2D u_ground_normal_roughness_1;
+uniform sampler2D u_ground_normal_roughness_2;
+uniform sampler2D u_ground_normal_roughness_3;
+
+// Had to give this uniform a suffix, because it's declared as a simple float
+// in other shaders, and its type cannot be inferred by the plugin.
+// See https://github.com/godotengine/godot/issues/24488
+uniform vec4 u_ground_uv_scale_per_texture = vec4(20.0, 20.0, 20.0, 20.0);
+
+uniform bool u_depth_blending = true;
+uniform bool u_triplanar = false;
+// Each component corresponds to a ground texture. Set greater than zero to enable.
+uniform vec4 u_tile_reduction = vec4(0.0, 0.0, 0.0, 0.0);
+
+uniform float u_globalmap_blend_start;
+uniform float u_globalmap_blend_distance;
+
+uniform vec4 u_colormap_opacity_per_texture = vec4(1.0, 1.0, 1.0, 1.0);
+
+varying float v_hole;
+varying vec3 v_tint0;
+varying vec3 v_tint1;
+varying vec3 v_tint2;
+varying vec3 v_tint3;
+varying vec4 v_splat;
+varying vec2 v_ground_uv0;
+varying vec2 v_ground_uv1;
+varying vec2 v_ground_uv2;
+varying vec3 v_ground_uv3;
+varying float v_distance_to_camera;
+
+
+vec3 unpack_normal(vec4 rgba) {
+	vec3 n = rgba.xzy * 2.0 - vec3(1.0);
+	// Had to negate Z because it comes from Y in the normal map,
+	// and OpenGL-style normal maps are Y-up.
+	n.z *= -1.0;
+	return n;
+}
+
+vec4 pack_normal(vec3 n, float a) {
+	n.z *= -1.0;
+	return vec4((n.xzy + vec3(1.0)) * 0.5, a);
+}
+
+// Blends weights according to the bump of detail textures,
+// so for example it allows to have sand fill the gaps between pebbles
+vec4 get_depth_blended_weights(vec4 splat, vec4 bumps) {
+	float dh = 0.2;
+
+	vec4 h = bumps + splat;
+
+	// TODO Keep improving multilayer blending, there are still some edge cases...
+	// Mitigation: nullify layers with near-zero splat
+	h *= smoothstep(0, 0.05, splat);
+
+	vec4 d = h + dh;
+	d.r -= max(h.g, max(h.b, h.a));
+	d.g -= max(h.r, max(h.b, h.a));
+	d.b -= max(h.g, max(h.r, h.a));
+	d.a -= max(h.g, max(h.b, h.r));
+
+	return clamp(d, 0, 1);
+}
+
+vec3 get_triplanar_blend(vec3 world_normal) {
+	vec3 blending = abs(world_normal);
+	blending = normalize(max(blending, vec3(0.00001))); // Force weights to sum to 1.0
+	float b = blending.x + blending.y + blending.z;
+	return blending / vec3(b, b, b);
+}
+
+vec4 texture_triplanar(sampler2D tex, vec3 world_pos, vec3 blend) {
+	vec4 xaxis = texture(tex, world_pos.yz);
+	vec4 yaxis = texture(tex, world_pos.xz);
+	vec4 zaxis = texture(tex, world_pos.xy);
+	// blend the results of the 3 planar projections.
+	return xaxis * blend.x + yaxis * blend.y + zaxis * blend.z;
+}
+
+vec4 depth_blend2(vec4 a_value, float a_bump, vec4 b_value, float b_bump, float t) {
+	// https://www.gamasutra.com
+	// /blogs/AndreyMishkinis/20130716/196339/Advanced_Terrain_Texture_Splatting.php
+	float d = 0.1;
+	float ma = max(a_bump + (1.0 - t), b_bump + t) - d;
+	float ba = max(a_bump + (1.0 - t) - ma, 0.0);
+	float bb = max(b_bump + t - ma, 0.0);
+	return (a_value * ba + b_value * bb) / (ba + bb);
+}
+
+vec2 rotate(vec2 v, float cosa, float sina) {
+	return vec2(cosa * v.x - sina * v.y, sina * v.x + cosa * v.y);
+}
+
+vec4 texture_antitile(sampler2D albedo_tex, sampler2D normal_tex, vec2 uv, out vec4 out_normal) {
+	float frequency = 2.0;
+	float scale = 1.3;
+	float sharpness = 0.7;
+	
+	// Rotate and scale UV
+	float rot = 3.14 * 0.6;
+	float cosa = cos(rot);
+	float sina = sin(rot);
+	vec2 uv2 = rotate(uv, cosa, sina) * scale;
+	
+	vec4 col0 = texture(albedo_tex, uv);
+	vec4 col1 = texture(albedo_tex, uv2);
+	vec4 nrm0 = texture(normal_tex, uv);
+	vec4 nrm1 = texture(normal_tex, uv2);
+	//col0 = vec4(0.0, 0.5, 0.5, 1.0); // Highlights variations
+
+	// Normals have to be rotated too since we are rotating the texture...
+	// TODO Probably not the most efficient but understandable for now
+	vec3 n = unpack_normal(nrm1);
+	// Had to negate the Y axis for some reason. I never remember the myriad of conventions around
+	n.xz = rotate(n.xz, cosa, -sina);
+	nrm1 = pack_normal(n, nrm1.a);
+	
+	// Periodically alternate between the two versions using a warped checker pattern
+	float t = 1.2 + 
+		  sin(uv2.x * frequency + sin(uv.x) * 2.0) 
+		* cos(uv2.y * frequency + sin(uv.y) * 2.0); // Result in [0..2]
+	t = smoothstep(sharpness, 2.0 - sharpness, t);
+
+	// Using depth blend because classic alpha blending smoothes out details.
+	out_normal = depth_blend2(nrm0, col0.a, nrm1, col1.a, t);
+	return depth_blend2(col0, col0.a, col1, col1.a, t);
+}
+
+void vertex() {
+	vec4 wpos = WORLD_MATRIX * vec4(VERTEX, 1);
+	vec2 cell_coords = (u_terrain_inverse_transform * wpos).xz;
+	// Must add a half-offset so that we sample the center of pixels,
+	// otherwise bilinear filtering of the textures will give us mixed results (#183)
+	cell_coords += vec2(0.5);
+
+	// Normalized UV
+	UV = cell_coords / vec2(textureSize(u_terrain_heightmap, 0));
+
+	// Height displacement
+	float h = texture(u_terrain_heightmap, UV).r;
+	VERTEX.y = h;
+	wpos.y = h;
+
+	vec3 base_ground_uv = vec3(cell_coords.x, h * WORLD_MATRIX[1][1], cell_coords.y);
+	v_ground_uv0 = base_ground_uv.xz / u_ground_uv_scale_per_texture.x;
+	v_ground_uv1 = base_ground_uv.xz / u_ground_uv_scale_per_texture.y;
+	v_ground_uv2 = base_ground_uv.xz / u_ground_uv_scale_per_texture.z;
+	v_ground_uv3 = base_ground_uv / u_ground_uv_scale_per_texture.w;
+
+	// Putting this in vertex saves 2 fetches from the fragment shader,
+	// which is good for performance at a negligible quality cost,
+	// provided that geometry is a regular grid that decimates with LOD.
+	// (downside is LOD will also decimate tint and splat, but it's not bad overall)
+	vec4 tint = texture(u_terrain_colormap, UV);
+	v_hole = tint.a;
+	v_tint0 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.x);
+	v_tint1 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.y);
+	v_tint2 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.z);
+	v_tint3 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.w);
+	v_splat = texture(u_terrain_splatmap, UV);
+
+	// Need to use u_terrain_normal_basis to handle scaling.
+	NORMAL = u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
+
+	v_distance_to_camera = distance(wpos.xyz, CAMERA_MATRIX[3].xyz);
+}
+
+void fragment() {
+	if (v_hole < 0.5) {
+		// TODO Add option to use vertex discarding instead, using NaNs
+		discard;
+	}
+
+	vec3 terrain_normal_world = 
+		u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
+	terrain_normal_world = normalize(terrain_normal_world);
+	vec3 normal = terrain_normal_world;
+
+	float globalmap_factor = clamp((v_distance_to_camera - u_globalmap_blend_start) 
+		* u_globalmap_blend_distance, 0.0, 1.0);
+	globalmap_factor *= globalmap_factor; // slower start, faster transition but far away
+	vec3 global_albedo = texture(u_terrain_globalmap, UV).rgb;
+	ALBEDO = global_albedo * albedo.rgb;
+
+	// Doing this branch allows to spare a bunch of texture fetches for distant pixels.
+	// Eventually, there could be a split between near and far shaders in the future,
+	// if relevant on high-end GPUs
+	if (globalmap_factor < 1.0) {
+		vec4 ab0, ab1, ab2, ab3;
+		vec4 nr0, nr1, nr2, nr3;
+
+		if (u_triplanar) {
+			// Only do triplanar on one texture slot,
+			// because otherwise it would be very expensive and cost many more ifs.
+			// I chose the last slot because first slot is the default on new splatmaps,
+			// and that's a feature used for cliffs, which are usually designed later.
+
+			vec3 blending = get_triplanar_blend(terrain_normal_world);
+
+			ab3 = texture_triplanar(u_ground_albedo_bump_3, v_ground_uv3, blending);
+			nr3 = texture_triplanar(u_ground_normal_roughness_3, v_ground_uv3, blending);
+
+		} else {
+			if (u_tile_reduction[3] > 0.0) {
+				ab3 = texture_antitile(
+					u_ground_albedo_bump_3, u_ground_normal_roughness_3, v_ground_uv3.xz, nr3);
+			} else {
+				ab3 = texture(u_ground_albedo_bump_3, v_ground_uv3.xz);
+				nr3 = texture(u_ground_normal_roughness_3, v_ground_uv3.xz);
+			}
+		}
+
+		if (u_tile_reduction[0] > 0.0) {
+			ab0 = texture_antitile(
+				u_ground_albedo_bump_0, u_ground_normal_roughness_0, v_ground_uv0, nr0);
+		} else {
+			ab0 = texture(u_ground_albedo_bump_0, v_ground_uv0);
+			nr0 = texture(u_ground_normal_roughness_0, v_ground_uv0);
+		}
+		if (u_tile_reduction[1] > 0.0) {
+			ab1 = texture_antitile(
+				u_ground_albedo_bump_1, u_ground_normal_roughness_1, v_ground_uv1, nr1);
+		} else {
+			ab1 = texture(u_ground_albedo_bump_1, v_ground_uv1);
+			nr1 = texture(u_ground_normal_roughness_1, v_ground_uv1);
+		}
+		if (u_tile_reduction[2] > 0.0) {
+			ab2 = texture_antitile(
+				u_ground_albedo_bump_2, u_ground_normal_roughness_2, v_ground_uv2, nr2);
+		} else {
+			ab2 = texture(u_ground_albedo_bump_2, v_ground_uv2);
+			nr2 = texture(u_ground_normal_roughness_2, v_ground_uv2);
+		}
+
+		vec3 col0 = ab0.rgb * v_tint0;
+		vec3 col1 = ab1.rgb * v_tint1;
+		vec3 col2 = ab2.rgb * v_tint2;
+		vec3 col3 = ab3.rgb * v_tint3;
+
+		vec4 rough = vec4(nr0.a, nr1.a, nr2.a, nr3.a);
+
+		vec3 normal0 = unpack_normal(nr0);
+		vec3 normal1 = unpack_normal(nr1);
+		vec3 normal2 = unpack_normal(nr2);
+		vec3 normal3 = unpack_normal(nr3);
+
+		vec4 w;
+		// TODO An #ifdef macro would be nice! Or copy/paste everything in a different shader...
+		if (u_depth_blending) {
+			w = get_depth_blended_weights(v_splat, vec4(ab0.a, ab1.a, ab2.a, ab3.a));
+		} else {
+			w = v_splat.rgba;
+		}
+
+		float w_sum = (w.r + w.g + w.b + w.a);
+
+		ALBEDO = (
+			w.r * col0.rgb +
+			w.g * col1.rgb +
+			w.b * col2.rgb +
+			w.a * col3.rgb) / w_sum * albedo.rgb;
+
+		ROUGHNESS = (
+			w.r * rough.r +
+			w.g * rough.g +
+			w.b * rough.b +
+			w.a * rough.a) / w_sum;
+
+		vec3 ground_normal = /*u_terrain_normal_basis **/ (
+			w.r * normal0 +
+			w.g * normal1 +
+			w.b * normal2 +
+			w.a * normal3) / w_sum;
+		// If no splat textures are defined, normal vectors will default to (1,1,1),
+		// which is incorrect, and causes the terrain to be shaded wrongly in some directions.
+		// However, this should not be a problem to fix in the shader,
+		// because there MUST be at least one splat texture set.
+		//ground_normal = normalize(ground_normal);
+		// TODO Make the plugin insert a default normalmap if it's empty
+
+		// Combine terrain normals with detail normals (not sure if correct but looks ok)
+		normal = normalize(vec3(
+			terrain_normal_world.x + ground_normal.x,
+			terrain_normal_world.y,
+			terrain_normal_world.z + ground_normal.z));
+
+		normal = mix(normal, terrain_normal_world, globalmap_factor);
+
+		ALBEDO = mix(ALBEDO, global_albedo, globalmap_factor);
+		ROUGHNESS = mix(ROUGHNESS, 1.0, globalmap_factor);
+	}
+
+	NORMAL = (INV_CAMERA_MATRIX * (vec4(normal, 0.0))).xyz;
+}
+"
+
+[sub_resource type="Resource" id=37]
+script = ExtResource( 17 )
+mode = 0
+textures = [ [ ExtResource( 2 ), ExtResource( 7 ), ExtResource( 4 ), ExtResource( 8 ) ], [ ExtResource( 6 ), ExtResource( 5 ), ExtResource( 3 ), ExtResource( 9 ) ] ]
+
+[sub_resource type="CubeMesh" id=8]
+size = Vector3( 3, 1.5, 2 )
+
+[sub_resource type="OpenSimplexNoise" id=10]
+
+[sub_resource type="NoiseTexture" id=11]
+seamless = true
+noise = SubResource( 10 )
+
+[sub_resource type="SpatialMaterial" id=12]
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.345098, 0.286275, 0.858824, 1 )
+albedo_texture = SubResource( 11 )
+distance_fade_mode = 3
+distance_fade_min_distance = 100.0
+distance_fade_max_distance = 95.0
+
+[sub_resource type="ConcavePolygonShape" id=17]
+data = PoolVector3Array( -1.5, 0.75, 1, 1.5, 0.75, 1, -1.5, -0.75, 1, 1.5, 0.75, 1, 1.5, -0.75, 1, -1.5, -0.75, 1, 1.5, 0.75, -1, -1.5, 0.75, -1, 1.5, -0.75, -1, -1.5, 0.75, -1, -1.5, -0.75, -1, 1.5, -0.75, -1, 1.5, 0.75, 1, 1.5, 0.75, -1, 1.5, -0.75, 1, 1.5, 0.75, -1, 1.5, -0.75, -1, 1.5, -0.75, 1, -1.5, 0.75, -1, -1.5, 0.75, 1, -1.5, -0.75, -1, -1.5, 0.75, 1, -1.5, -0.75, 1, -1.5, -0.75, -1, 1.5, 0.75, 1, -1.5, 0.75, 1, 1.5, 0.75, -1, -1.5, 0.75, 1, -1.5, 0.75, -1, 1.5, 0.75, -1, -1.5, -0.75, 1, 1.5, -0.75, 1, -1.5, -0.75, -1, 1.5, -0.75, 1, 1.5, -0.75, -1, -1.5, -0.75, -1 )
+
+[sub_resource type="SpatialMaterial" id=14]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource( 1 )
+uv1_triplanar = true
+distance_fade_mode = 3
+distance_fade_min_distance = 100.0
+distance_fade_max_distance = 95.0
+
+[sub_resource type="CylinderMesh" id=13]
+material = SubResource( 14 )
+top_radius = 0.1
+bottom_radius = 0.1
+height = 5.0
+radial_segments = 5
+rings = 1
+
+[sub_resource type="ConcavePolygonShape" id=18]
+data = PoolVector3Array( 0, 2.5, 0.1, 0.0951, 2.5, 0.0309, 0, 0, 0.1, 0.0951, 2.5, 0.0309, 0.0951, 0, 0.0309, 0, 0, 0.1, 0.0951, 2.5, 0.0309, 0.0588, 2.5, -0.0809, 0.0951, 0, 0.0309, 0.0588, 2.5, -0.0809, 0.0588, 0, -0.0809, 0.0951, 0, 0.0309, 0.0588, 2.5, -0.0809, -0.0588, 2.5, -0.0809, 0.0588, 0, -0.0809, -0.0588, 2.5, -0.0809, -0.0588, 0, -0.0809, 0.0588, 0, -0.0809, -0.0588, 2.5, -0.0809, -0.0951, 2.5, 0.0309, -0.0588, 0, -0.0809, -0.0951, 2.5, 0.0309, -0.0951, 0, 0.0309, -0.0588, 0, -0.0809, -0.0951, 2.5, 0.0309, 0, 2.5, 0.1, -0.0951, 0, 0.0309, 0, 2.5, 0.1, 0, 0, 0.1, -0.0951, 0, 0.0309, 0, 0, 0.1, 0.0951, 0, 0.0309, 0, -2.5, 0.1, 0.0951, 0, 0.0309, 0.0951, -2.5, 0.0309, 0, -2.5, 0.1, 0.0951, 0, 0.0309, 0.0588, 0, -0.0809, 0.0951, -2.5, 0.0309, 0.0588, 0, -0.0809, 0.0588, -2.5, -0.0809, 0.0951, -2.5, 0.0309, 0.0588, 0, -0.0809, -0.0588, 0, -0.0809, 0.0588, -2.5, -0.0809, -0.0588, 0, -0.0809, -0.0588, -2.5, -0.0809, 0.0588, -2.5, -0.0809, -0.0588, 0, -0.0809, -0.0951, 0, 0.0309, -0.0588, -2.5, -0.0809, -0.0951, 0, 0.0309, -0.0951, -2.5, 0.0309, -0.0588, -2.5, -0.0809, -0.0951, 0, 0.0309, 0, 0, 0.1, -0.0951, -2.5, 0.0309, 0, 0, 0.1, 0, -2.5, 0.1, -0.0951, -2.5, 0.0309, 0, 2.5, 0, 0.0951, 2.5, 0.0309, 0, 2.5, 0.1, 0, 2.5, 0, 0.0588, 2.5, -0.0809, 0.0951, 2.5, 0.0309, 0, 2.5, 0, -0.0588, 2.5, -0.0809, 0.0588, 2.5, -0.0809, 0, 2.5, 0, -0.0951, 2.5, 0.0309, -0.0588, 2.5, -0.0809, 0, 2.5, 0, 0, 2.5, 0.1, -0.0951, 2.5, 0.0309, 0, -2.5, 0, 0, -2.5, 0.1, 0.0951, -2.5, 0.0309, 0, -2.5, 0, 0.0951, -2.5, 0.0309, 0.0588, -2.5, -0.0809, 0, -2.5, 0, 0.0588, -2.5, -0.0809, -0.0588, -2.5, -0.0809, 0, -2.5, 0, -0.0588, -2.5, -0.0809, -0.0951, -2.5, 0.0309, 0, -2.5, 0, -0.0951, -2.5, 0.0309, 0, -2.5, 0.1 )
+
+[sub_resource type="ConcavePolygonShape" id=19]
+data = PoolVector3Array( 0, 2.5, 0.1, 0.0951, 2.5, 0.0309, 0, 0, 0.1, 0.0951, 2.5, 0.0309, 0.0951, 0, 0.0309, 0, 0, 0.1, 0.0951, 2.5, 0.0309, 0.0588, 2.5, -0.0809, 0.0951, 0, 0.0309, 0.0588, 2.5, -0.0809, 0.0588, 0, -0.0809, 0.0951, 0, 0.0309, 0.0588, 2.5, -0.0809, -0.0588, 2.5, -0.0809, 0.0588, 0, -0.0809, -0.0588, 2.5, -0.0809, -0.0588, 0, -0.0809, 0.0588, 0, -0.0809, -0.0588, 2.5, -0.0809, -0.0951, 2.5, 0.0309, -0.0588, 0, -0.0809, -0.0951, 2.5, 0.0309, -0.0951, 0, 0.0309, -0.0588, 0, -0.0809, -0.0951, 2.5, 0.0309, 0, 2.5, 0.1, -0.0951, 0, 0.0309, 0, 2.5, 0.1, 0, 0, 0.1, -0.0951, 0, 0.0309, 0, 0, 0.1, 0.0951, 0, 0.0309, 0, -2.5, 0.1, 0.0951, 0, 0.0309, 0.0951, -2.5, 0.0309, 0, -2.5, 0.1, 0.0951, 0, 0.0309, 0.0588, 0, -0.0809, 0.0951, -2.5, 0.0309, 0.0588, 0, -0.0809, 0.0588, -2.5, -0.0809, 0.0951, -2.5, 0.0309, 0.0588, 0, -0.0809, -0.0588, 0, -0.0809, 0.0588, -2.5, -0.0809, -0.0588, 0, -0.0809, -0.0588, -2.5, -0.0809, 0.0588, -2.5, -0.0809, -0.0588, 0, -0.0809, -0.0951, 0, 0.0309, -0.0588, -2.5, -0.0809, -0.0951, 0, 0.0309, -0.0951, -2.5, 0.0309, -0.0588, -2.5, -0.0809, -0.0951, 0, 0.0309, 0, 0, 0.1, -0.0951, -2.5, 0.0309, 0, 0, 0.1, 0, -2.5, 0.1, -0.0951, -2.5, 0.0309, 0, 2.5, 0, 0.0951, 2.5, 0.0309, 0, 2.5, 0.1, 0, 2.5, 0, 0.0588, 2.5, -0.0809, 0.0951, 2.5, 0.0309, 0, 2.5, 0, -0.0588, 2.5, -0.0809, 0.0588, 2.5, -0.0809, 0, 2.5, 0, -0.0951, 2.5, 0.0309, -0.0588, 2.5, -0.0809, 0, 2.5, 0, 0, 2.5, 0.1, -0.0951, 2.5, 0.0309, 0, -2.5, 0, 0, -2.5, 0.1, 0.0951, -2.5, 0.0309, 0, -2.5, 0, 0.0951, -2.5, 0.0309, 0.0588, -2.5, -0.0809, 0, -2.5, 0, 0.0588, -2.5, -0.0809, -0.0588, -2.5, -0.0809, 0, -2.5, 0, -0.0588, -2.5, -0.0809, -0.0951, -2.5, 0.0309, 0, -2.5, 0, -0.0951, -2.5, 0.0309, 0, -2.5, 0.1 )
+
+[sub_resource type="SpatialMaterial" id=15]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource( 1 )
+uv1_scale = Vector3( 10, 1, 1 )
+distance_fade_mode = 3
+distance_fade_min_distance = 100.0
+distance_fade_max_distance = 95.0
+
+[sub_resource type="CubeMesh" id=16]
+material = SubResource( 15 )
+size = Vector3( 6.5, 1, 0.3 )
+
+[sub_resource type="SpatialMaterial" id=4]
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.235294, 0.235294, 0.235294, 1 )
+
+[sub_resource type="QuadMesh" id=9]
+material = SubResource( 4 )
+size = Vector2( 30, 20 )
+
+[sub_resource type="QuadMesh" id=5]
+material = SubResource( 4 )
+size = Vector2( 5, 10 )
+
+[sub_resource type="ArrayMesh" id=42]
+blend_shape_mode = 0
+surfaces/0 = {
+"aabb": AABB( -0.0254645, -0.0237943, -0.00693052, 0.0506071, 0.0465157, 0.158994 ),
+"array_data": PoolByteArray( 193, 43, 115, 188, 246, 7, 172, 57, 221, 55, 148, 187, 123, 112, 111, 193, 232, 176, 217, 65, 1, 155, 208, 188, 133, 190, 83, 188, 43, 27, 208, 187, 123, 112, 111, 193, 254, 184, 6, 67, 15, 228, 92, 188, 151, 255, 204, 187, 221, 55, 148, 187, 123, 112, 111, 193, 245, 173, 110, 66, 28, 16, 2, 187, 39, 172, 178, 187, 121, 157, 208, 59, 211, 202, 69, 34, 169, 54, 80, 65, 176, 216, 15, 188, 229, 15, 129, 187, 30, 33, 26, 187, 211, 202, 69, 34, 97, 47, 22, 66, 91, 170, 164, 187, 165, 35, 62, 187, 121, 157, 208, 59, 211, 202, 69, 34, 129, 52, 80, 65, 176, 216, 15, 188, 229, 15, 129, 187, 30, 33, 26, 187, 223, 176, 89, 44, 97, 47, 22, 66, 28, 16, 2, 187, 39, 172, 178, 187, 121, 157, 208, 59, 223, 176, 89, 44, 169, 54, 80, 65, 204, 49, 227, 186, 157, 34, 226, 187, 30, 33, 26, 187, 223, 176, 89, 44, 215, 54, 22, 66, 253, 201, 218, 58, 68, 243, 77, 188, 30, 33, 26, 187, 190, 217, 209, 153, 190, 170, 22, 66, 28, 16, 2, 187, 134, 132, 250, 187, 221, 55, 148, 187, 190, 217, 209, 153, 76, 49, 71, 66, 204, 49, 227, 186, 157, 34, 226, 187, 30, 33, 26, 187, 190, 217, 209, 153, 90, 50, 22, 66, 28, 16, 2, 187, 134, 132, 250, 187, 221, 55, 148, 187, 203, 243, 231, 142, 76, 49, 71, 66, 253, 201, 218, 58, 68, 243, 77, 188, 30, 33, 26, 187, 203, 243, 231, 142, 190, 170, 22, 66, 29, 16, 2, 59, 69, 236, 194, 188, 221, 55, 148, 187, 203, 243, 231, 142, 102, 184, 71, 66, 48, 202, 150, 59, 70, 167, 109, 187, 192, 178, 146, 61, 77, 44, 210, 103, 127, 53, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 77, 44, 210, 103, 234, 52, 153, 195, 112, 117, 68, 59, 120, 135, 97, 186, 192, 178, 146, 61, 77, 44, 210, 103, 117, 55, 137, 179, 41, 64, 187, 187, 192, 17, 132, 58, 121, 157, 208, 59, 224, 90, 92, 176, 4, 52, 80, 65, 143, 96, 22, 183, 170, 139, 110, 57, 192, 178, 146, 61, 224, 90, 92, 176, 8, 56, 137, 179, 206, 91, 69, 187, 167, 140, 100, 186, 192, 178, 146, 61, 224, 90, 92, 176, 239, 53, 137, 179, 143, 96, 22, 183, 170, 139, 110, 57, 192, 178, 146, 61, 181, 43, 46, 153, 8, 56, 137, 179, 41, 64, 187, 187, 192, 17, 132, 58, 121, 157, 208, 59, 181, 43, 46, 153, 4, 52, 80, 65, 59, 112, 116, 187, 182, 167, 145, 59, 121, 157, 208, 59, 181, 43, 46, 153, 108, 53, 80, 65, 0, 0, 0, 0, 167, 35, 190, 59, 121, 157, 208, 59, 79, 46, 46, 233, 9, 56, 80, 65, 48, 202, 150, 59, 70, 167, 109, 187, 192, 178, 146, 61, 79, 46, 46, 233, 170, 57, 137, 179, 112, 117, 68, 59, 120, 135, 97, 186, 192, 178, 146, 61, 79, 46, 46, 233, 25, 57, 137, 179, 48, 202, 150, 59, 70, 167, 109, 187, 192, 178, 146, 61, 31, 85, 93, 210, 170, 57, 137, 179, 0, 0, 0, 0, 167, 35, 190, 59, 121, 157, 208, 59, 31, 85, 93, 210, 9, 56, 80, 65, 55, 112, 116, 59, 183, 167, 145, 59, 121, 157, 208, 59, 31, 85, 93, 210, 91, 57, 80, 65, 91, 170, 164, 187, 165, 35, 62, 187, 121, 157, 208, 59, 158, 239, 237, 139, 3, 54, 80, 65, 27, 175, 224, 187, 66, 128, 12, 59, 30, 33, 26, 187, 158, 239, 237, 139, 203, 56, 22, 66, 41, 64, 187, 187, 192, 17, 132, 58, 121, 157, 208, 59, 158, 239, 237, 139, 100, 56, 80, 65, 27, 175, 224, 187, 66, 128, 12, 59, 30, 33, 26, 187, 182, 23, 30, 145, 203, 56, 22, 66, 91, 170, 164, 187, 165, 35, 62, 187, 121, 157, 208, 59, 182, 23, 30, 145, 3, 54, 80, 65, 176, 216, 15, 188, 229, 15, 129, 187, 30, 33, 26, 187, 182, 23, 30, 145, 71, 53, 22, 66, 30, 65, 200, 59, 98, 62, 37, 187, 30, 33, 26, 187, 32, 242, 126, 82, 51, 58, 25, 66, 29, 16, 2, 59, 69, 236, 194, 188, 221, 55, 148, 187, 32, 242, 126, 82, 189, 56, 252, 67, 253, 201, 218, 58, 68, 243, 77, 188, 30, 33, 26, 187, 32, 242, 126, 82, 160, 56, 253, 66, 29, 16, 2, 59, 69, 236, 194, 188, 221, 55, 148, 187, 58, 240, 126, 29, 189, 56, 252, 67, 30, 65, 200, 59, 98, 62, 37, 187, 30, 33, 26, 187, 58, 240, 126, 29, 51, 58, 25, 66, 5, 165, 1, 60, 169, 35, 62, 187, 221, 55, 148, 187, 58, 240, 126, 29, 215, 58, 34, 66, 78, 166, 210, 58, 142, 197, 16, 188, 192, 178, 146, 61, 55, 190, 68, 92, 154, 56, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 55, 190, 68, 92, 9, 56, 153, 195, 68, 203, 132, 59, 243, 10, 222, 187, 192, 178, 146, 61, 55, 190, 68, 92, 120, 57, 137, 179, 59, 112, 116, 187, 182, 167, 145, 59, 121, 157, 208, 59, 32, 90, 93, 210, 108, 53, 80, 65, 112, 117, 68, 59, 120, 135, 97, 186, 192, 178, 146, 61, 32, 90, 93, 210, 25, 57, 137, 179, 143, 96, 22, 183, 170, 139, 110, 57, 192, 178, 146, 61, 32, 90, 93, 210, 8, 56, 137, 179, 112, 117, 68, 59, 120, 135, 97, 186, 192, 178, 146, 61, 225, 85, 93, 176, 25, 57, 137, 179, 59, 112, 116, 187, 182, 167, 145, 59, 121, 157, 208, 59, 225, 85, 93, 176, 108, 53, 80, 65, 0, 0, 0, 0, 167, 35, 190, 59, 121, 157, 208, 59, 225, 85, 93, 176, 9, 56, 80, 65, 55, 112, 116, 59, 183, 167, 145, 59, 121, 157, 208, 59, 108, 235, 18, 117, 156, 57, 80, 65, 68, 203, 132, 59, 243, 10, 222, 187, 192, 178, 146, 61, 108, 235, 18, 117, 135, 50, 137, 179, 48, 202, 150, 59, 70, 167, 109, 187, 192, 178, 146, 61, 108, 235, 18, 117, 127, 53, 137, 179, 68, 203, 132, 59, 243, 10, 222, 187, 192, 178, 146, 61, 75, 43, 210, 103, 135, 50, 137, 179, 55, 112, 116, 59, 183, 167, 145, 59, 121, 157, 208, 59, 75, 43, 210, 103, 156, 57, 80, 65, 41, 64, 187, 59, 196, 17, 132, 58, 121, 157, 208, 59, 75, 43, 210, 103, 100, 56, 80, 65, 41, 64, 187, 187, 192, 17, 132, 58, 121, 157, 208, 59, 185, 41, 46, 153, 100, 56, 80, 65, 164, 239, 168, 187, 11, 207, 166, 59, 30, 33, 26, 187, 185, 41, 46, 153, 215, 57, 22, 66, 59, 112, 116, 187, 182, 167, 145, 59, 121, 157, 208, 59, 185, 41, 46, 153, 156, 57, 80, 65, 164, 239, 168, 187, 11, 207, 166, 59, 30, 33, 26, 187, 185, 41, 46, 153, 215, 57, 22, 66, 41, 64, 187, 187, 192, 17, 132, 58, 121, 157, 208, 59, 185, 41, 46, 153, 100, 56, 80, 65, 27, 175, 224, 187, 66, 128, 12, 59, 30, 33, 26, 187, 185, 41, 46, 153, 203, 56, 22, 66, 29, 125, 6, 184, 179, 101, 61, 60, 30, 33, 26, 187, 57, 41, 203, 100, 17, 60, 22, 66, 96, 197, 163, 59, 16, 20, 199, 59, 221, 55, 148, 187, 57, 41, 203, 100, 48, 58, 71, 66, 228, 69, 145, 59, 100, 41, 177, 59, 30, 33, 26, 187, 57, 41, 203, 100, 243, 57, 22, 66, 96, 197, 163, 59, 16, 20, 199, 59, 221, 55, 148, 187, 54, 34, 207, 102, 48, 58, 71, 66, 29, 125, 6, 184, 179, 101, 61, 60, 30, 33, 26, 187, 54, 34, 207, 102, 17, 60, 22, 66, 203, 56, 184, 187, 69, 34, 186, 60, 221, 55, 148, 187, 54, 34, 207, 102, 11, 62, 71, 66, 68, 203, 132, 59, 243, 10, 222, 187, 192, 178, 146, 61, 103, 238, 18, 117, 135, 50, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 103, 238, 18, 117, 234, 52, 153, 195, 48, 202, 150, 59, 70, 167, 109, 187, 192, 178, 146, 61, 103, 238, 18, 117, 127, 53, 137, 179, 228, 69, 145, 59, 100, 41, 177, 59, 30, 33, 26, 187, 21, 13, 17, 126, 75, 61, 208, 64, 216, 247, 205, 60, 21, 47, 61, 59, 105, 25, 227, 187, 21, 13, 17, 126, 228, 60, 167, 66, 212, 77, 222, 59, 52, 74, 214, 58, 30, 33, 26, 187, 21, 13, 17, 126, 161, 60, 7, 65, 216, 247, 205, 60, 21, 47, 61, 59, 105, 25, 227, 187, 16, 81, 93, 126, 228, 60, 167, 66, 228, 69, 145, 59, 100, 41, 177, 59, 30, 33, 26, 187, 16, 81, 93, 126, 75, 61, 208, 64, 96, 197, 163, 59, 16, 20, 199, 59, 221, 55, 148, 187, 16, 81, 93, 126, 106, 61, 221, 64, 41, 64, 187, 59, 196, 17, 132, 58, 121, 157, 208, 59, 61, 185, 68, 92, 100, 56, 80, 65, 78, 166, 210, 58, 142, 197, 16, 188, 192, 178, 146, 61, 61, 185, 68, 92, 56, 47, 137, 179, 68, 203, 132, 59, 243, 10, 222, 187, 192, 178, 146, 61, 61, 185, 68, 92, 135, 50, 137, 179, 78, 166, 210, 58, 142, 197, 16, 188, 192, 178, 146, 61, 104, 238, 19, 117, 56, 47, 137, 179, 41, 64, 187, 59, 196, 17, 132, 58, 121, 157, 208, 59, 104, 238, 19, 117, 100, 56, 80, 65, 91, 170, 164, 59, 169, 35, 62, 187, 121, 157, 208, 59, 104, 238, 19, 117, 3, 54, 80, 65, 59, 112, 116, 187, 182, 167, 145, 59, 121, 157, 208, 59, 234, 62, 93, 176, 108, 53, 80, 65, 29, 125, 6, 184, 179, 101, 61, 60, 30, 33, 26, 187, 234, 62, 93, 176, 6, 56, 22, 66, 0, 0, 0, 0, 167, 35, 190, 59, 121, 157, 208, 59, 234, 62, 93, 176, 9, 56, 80, 65, 29, 125, 6, 184, 179, 101, 61, 60, 30, 33, 26, 187, 193, 49, 56, 158, 6, 56, 22, 66, 59, 112, 116, 187, 182, 167, 145, 59, 121, 157, 208, 59, 193, 49, 56, 158, 108, 53, 80, 65, 164, 239, 168, 187, 11, 207, 166, 59, 30, 33, 26, 187, 193, 49, 56, 158, 106, 52, 22, 66, 212, 77, 222, 59, 52, 74, 214, 58, 30, 33, 26, 187, 62, 246, 1, 117, 161, 60, 7, 65, 5, 165, 1, 60, 169, 35, 62, 187, 221, 55, 148, 187, 62, 246, 1, 117, 168, 59, 33, 65, 30, 65, 200, 59, 98, 62, 37, 187, 30, 33, 26, 187, 62, 246, 1, 117, 201, 59, 248, 64, 5, 165, 1, 60, 169, 35, 62, 187, 221, 55, 148, 187, 20, 226, 1, 108, 168, 59, 33, 65, 212, 77, 222, 59, 52, 74, 214, 58, 30, 33, 26, 187, 20, 226, 1, 108, 161, 60, 7, 65, 216, 247, 205, 60, 21, 47, 61, 59, 105, 25, 227, 187, 20, 226, 1, 108, 228, 60, 167, 66, 193, 184, 211, 187, 184, 185, 188, 59, 221, 55, 148, 187, 127, 127, 126, 193, 250, 50, 94, 65, 96, 197, 163, 59, 16, 20, 199, 59, 221, 55, 148, 187, 127, 127, 126, 193, 206, 57, 86, 65, 203, 56, 184, 187, 69, 34, 186, 60, 221, 55, 148, 187, 127, 127, 126, 193, 21, 52, 186, 63, 193, 184, 211, 187, 184, 185, 188, 59, 221, 55, 148, 187, 127, 127, 126, 193, 250, 50, 94, 65, 57, 93, 250, 187, 228, 44, 24, 59, 221, 55, 148, 187, 127, 127, 126, 193, 78, 49, 172, 65, 96, 197, 163, 59, 16, 20, 199, 59, 221, 55, 148, 187, 127, 127, 126, 193, 206, 57, 86, 65, 28, 16, 2, 187, 134, 132, 250, 187, 221, 55, 148, 187, 127, 127, 126, 193, 169, 54, 142, 66, 28, 16, 2, 187, 134, 132, 250, 187, 221, 55, 148, 187, 127, 127, 126, 193, 169, 54, 142, 66, 5, 165, 1, 60, 169, 35, 62, 187, 221, 55, 148, 187, 127, 127, 126, 193, 215, 58, 34, 66, 57, 93, 250, 187, 228, 44, 24, 59, 221, 55, 148, 187, 127, 127, 126, 193, 78, 49, 172, 65, 15, 228, 92, 188, 151, 255, 204, 187, 221, 55, 148, 187, 127, 127, 126, 193, 245, 173, 110, 66, 5, 165, 1, 60, 169, 35, 62, 187, 221, 55, 148, 187, 134, 143, 126, 186, 215, 58, 34, 66, 216, 247, 205, 60, 21, 47, 61, 59, 105, 25, 227, 187, 134, 143, 126, 186, 121, 62, 159, 65, 96, 197, 163, 59, 16, 20, 199, 59, 221, 55, 148, 187, 134, 143, 126, 186, 206, 57, 86, 65, 29, 16, 2, 59, 69, 236, 194, 188, 221, 55, 148, 187, 127, 127, 126, 193, 189, 56, 252, 67, 5, 165, 1, 60, 169, 35, 62, 187, 221, 55, 148, 187, 127, 127, 126, 193, 215, 58, 34, 66, 193, 43, 115, 188, 246, 7, 172, 57, 221, 55, 148, 187, 127, 127, 126, 193, 232, 176, 217, 65, 143, 96, 22, 183, 170, 139, 110, 57, 192, 178, 146, 61, 224, 89, 92, 176, 8, 56, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 224, 89, 92, 176, 9, 56, 153, 195, 206, 91, 69, 187, 167, 140, 100, 186, 192, 178, 146, 61, 224, 89, 92, 176, 239, 53, 137, 179, 91, 170, 164, 59, 169, 35, 62, 187, 121, 157, 208, 59, 10, 130, 126, 63, 209, 57, 80, 65, 38, 113, 208, 186, 68, 223, 16, 188, 192, 178, 146, 61, 10, 130, 126, 63, 241, 54, 137, 179, 78, 166, 210, 58, 142, 197, 16, 188, 192, 178, 146, 61, 10, 130, 126, 63, 154, 56, 137, 179, 38, 113, 208, 186, 68, 223, 16, 188, 192, 178, 146, 61, 58, 187, 69, 92, 241, 54, 137, 179, 91, 170, 164, 59, 169, 35, 62, 187, 121, 157, 208, 59, 58, 187, 69, 92, 209, 57, 80, 65, 29, 16, 2, 59, 39, 172, 178, 187, 121, 157, 208, 59, 58, 187, 69, 92, 189, 56, 80, 65, 55, 112, 116, 59, 183, 167, 145, 59, 121, 157, 208, 59, 72, 42, 210, 103, 156, 57, 80, 65, 212, 77, 222, 59, 52, 74, 214, 58, 30, 33, 26, 187, 72, 42, 210, 103, 157, 56, 22, 66, 41, 64, 187, 59, 196, 17, 132, 58, 121, 157, 208, 59, 72, 42, 210, 103, 100, 56, 80, 65, 212, 77, 222, 59, 52, 74, 214, 58, 30, 33, 26, 187, 71, 44, 208, 102, 157, 56, 22, 66, 55, 112, 116, 59, 183, 167, 145, 59, 121, 157, 208, 59, 71, 44, 208, 102, 156, 57, 80, 65, 228, 69, 145, 59, 100, 41, 177, 59, 30, 33, 26, 187, 71, 44, 208, 102, 243, 57, 22, 66, 41, 64, 187, 59, 196, 17, 132, 58, 121, 157, 208, 59, 98, 239, 19, 117, 100, 56, 80, 65, 30, 65, 200, 59, 98, 62, 37, 187, 30, 33, 26, 187, 98, 239, 19, 117, 72, 54, 22, 66, 91, 170, 164, 59, 169, 35, 62, 187, 121, 157, 208, 59, 98, 239, 19, 117, 3, 54, 80, 65, 30, 65, 200, 59, 98, 62, 37, 187, 30, 33, 26, 187, 99, 240, 17, 118, 72, 54, 22, 66, 41, 64, 187, 59, 196, 17, 132, 58, 121, 157, 208, 59, 99, 240, 17, 118, 100, 56, 80, 65, 212, 77, 222, 59, 52, 74, 214, 58, 30, 33, 26, 187, 99, 240, 17, 118, 157, 56, 22, 66, 164, 239, 168, 187, 11, 207, 166, 59, 30, 33, 26, 187, 241, 11, 110, 63, 106, 52, 109, 65, 203, 56, 184, 187, 69, 34, 186, 60, 221, 55, 148, 187, 241, 11, 110, 63, 21, 52, 186, 63, 29, 125, 6, 184, 179, 101, 61, 60, 30, 33, 26, 187, 241, 11, 110, 63, 6, 56, 218, 64, 206, 91, 69, 187, 167, 140, 100, 186, 192, 178, 146, 61, 179, 44, 46, 153, 115, 55, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 179, 44, 46, 153, 234, 52, 153, 195, 77, 228, 150, 187, 105, 207, 110, 187, 192, 178, 146, 61, 179, 44, 46, 153, 124, 53, 137, 179, 29, 16, 2, 59, 39, 172, 178, 187, 121, 157, 208, 59, 195, 184, 69, 34, 189, 56, 80, 65, 22, 128, 132, 187, 41, 141, 222, 187, 192, 178, 146, 61, 195, 184, 69, 34, 52, 53, 137, 179, 38, 113, 208, 186, 68, 223, 16, 188, 192, 178, 146, 61, 195, 184, 69, 34, 241, 54, 137, 179, 22, 128, 132, 187, 41, 141, 222, 187, 192, 178, 146, 61, 2, 129, 127, 63, 52, 53, 137, 179, 29, 16, 2, 59, 39, 172, 178, 187, 121, 157, 208, 59, 2, 129, 127, 63, 189, 56, 80, 65, 28, 16, 2, 187, 39, 172, 178, 187, 121, 157, 208, 59, 2, 129, 127, 63, 169, 54, 80, 65, 203, 56, 184, 187, 69, 34, 186, 60, 221, 55, 148, 187, 180, 3, 5, 132, 11, 62, 71, 66, 164, 239, 168, 187, 11, 207, 166, 59, 30, 33, 26, 187, 180, 3, 5, 132, 215, 57, 22, 66, 193, 184, 211, 187, 184, 185, 188, 59, 221, 55, 148, 187, 180, 3, 5, 132, 19, 58, 71, 66, 0, 0, 0, 0, 167, 35, 190, 59, 121, 157, 208, 59, 30, 84, 93, 210, 9, 56, 80, 65, 228, 69, 145, 59, 100, 41, 177, 59, 30, 33, 26, 187, 30, 84, 93, 210, 155, 57, 22, 66, 55, 112, 116, 59, 183, 167, 145, 59, 121, 157, 208, 59, 30, 84, 93, 210, 91, 57, 80, 65, 228, 69, 145, 59, 100, 41, 177, 59, 30, 33, 26, 187, 57, 41, 53, 230, 155, 57, 22, 66, 0, 0, 0, 0, 167, 35, 190, 59, 121, 157, 208, 59, 57, 41, 53, 230, 9, 56, 80, 65, 29, 125, 6, 184, 179, 101, 61, 60, 30, 33, 26, 187, 57, 41, 53, 230, 6, 56, 22, 66, 27, 175, 224, 187, 66, 128, 12, 59, 30, 33, 26, 187, 203, 31, 46, 153, 203, 56, 22, 66, 193, 184, 211, 187, 184, 185, 188, 59, 221, 55, 148, 187, 203, 31, 46, 153, 19, 58, 71, 66, 164, 239, 168, 187, 11, 207, 166, 59, 30, 33, 26, 187, 203, 31, 46, 153, 215, 57, 22, 66, 193, 184, 211, 187, 184, 185, 188, 59, 221, 55, 148, 187, 183, 25, 32, 146, 19, 58, 71, 66, 27, 175, 224, 187, 66, 128, 12, 59, 30, 33, 26, 187, 183, 25, 32, 146, 203, 56, 22, 66, 57, 93, 250, 187, 228, 44, 24, 59, 221, 55, 148, 187, 183, 25, 32, 146, 219, 56, 71, 66, 77, 228, 150, 187, 105, 207, 110, 187, 192, 178, 146, 61, 154, 238, 237, 139, 124, 53, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 154, 238, 237, 139, 234, 52, 153, 195, 22, 128, 132, 187, 41, 141, 222, 187, 192, 178, 146, 61, 154, 238, 237, 139, 130, 50, 137, 179, 28, 16, 2, 187, 39, 172, 178, 187, 121, 157, 208, 59, 148, 234, 237, 139, 52, 52, 80, 65, 77, 228, 150, 187, 105, 207, 110, 187, 192, 178, 146, 61, 148, 234, 237, 139, 124, 53, 137, 179, 22, 128, 132, 187, 41, 141, 222, 187, 192, 178, 146, 61, 148, 234, 237, 139, 130, 50, 137, 179, 77, 228, 150, 187, 105, 207, 110, 187, 192, 178, 146, 61, 198, 187, 187, 164, 124, 53, 137, 179, 28, 16, 2, 187, 39, 172, 178, 187, 121, 157, 208, 59, 198, 187, 187, 164, 52, 52, 80, 65, 91, 170, 164, 187, 165, 35, 62, 187, 121, 157, 208, 59, 198, 187, 187, 164, 3, 54, 80, 65, 15, 228, 92, 188, 151, 255, 204, 187, 221, 55, 148, 187, 12, 214, 54, 4, 138, 44, 39, 66, 1, 155, 208, 188, 133, 190, 83, 188, 43, 27, 208, 187, 12, 214, 54, 4, 93, 51, 68, 67, 201, 53, 107, 188, 101, 130, 116, 187, 125, 128, 61, 187, 12, 214, 54, 4, 200, 169, 51, 66, 91, 170, 164, 59, 169, 35, 62, 187, 121, 157, 208, 59, 40, 208, 69, 92, 3, 54, 80, 65, 253, 201, 218, 58, 68, 243, 77, 188, 30, 33, 26, 187, 40, 208, 69, 92, 190, 170, 22, 66, 29, 16, 2, 59, 39, 172, 178, 187, 121, 157, 208, 59, 40, 208, 69, 92, 52, 52, 80, 65, 253, 201, 218, 58, 68, 243, 77, 188, 30, 33, 26, 187, 82, 220, 38, 107, 190, 170, 22, 66, 91, 170, 164, 59, 169, 35, 62, 187, 121, 157, 208, 59, 82, 220, 38, 107, 3, 54, 80, 65, 30, 65, 200, 59, 98, 62, 37, 187, 30, 33, 26, 187, 82, 220, 38, 107, 72, 54, 22, 66, 57, 93, 250, 187, 228, 44, 24, 59, 221, 55, 148, 187, 182, 23, 7, 36, 119, 180, 136, 65, 27, 175, 224, 187, 66, 128, 12, 59, 30, 33, 26, 187, 182, 23, 7, 36, 68, 180, 119, 65, 176, 216, 15, 188, 229, 15, 129, 187, 30, 33, 26, 187, 182, 23, 7, 36, 197, 161, 181, 65, 193, 43, 115, 188, 246, 7, 172, 57, 221, 55, 148, 187, 248, 31, 12, 21, 23, 179, 44, 66, 57, 93, 250, 187, 228, 44, 24, 59, 221, 55, 148, 187, 248, 31, 12, 21, 119, 180, 136, 65, 176, 216, 15, 188, 229, 15, 129, 187, 30, 33, 26, 187, 248, 31, 12, 21, 197, 161, 181, 65, 201, 53, 107, 188, 101, 130, 116, 187, 125, 128, 61, 187, 249, 33, 12, 22, 115, 169, 46, 66, 193, 43, 115, 188, 246, 7, 172, 57, 221, 55, 148, 187, 249, 33, 12, 22, 23, 179, 44, 66, 176, 216, 15, 188, 229, 15, 129, 187, 30, 33, 26, 187, 249, 33, 12, 22, 197, 161, 181, 65, 22, 128, 132, 187, 41, 141, 222, 187, 192, 178, 146, 61, 201, 190, 69, 34, 52, 53, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 201, 190, 69, 34, 9, 56, 153, 195, 38, 113, 208, 186, 68, 223, 16, 188, 192, 178, 146, 61, 201, 190, 69, 34, 241, 54, 137, 179, 91, 170, 164, 187, 165, 35, 62, 187, 121, 157, 208, 59, 177, 45, 46, 153, 3, 54, 80, 65, 206, 91, 69, 187, 167, 140, 100, 186, 192, 178, 146, 61, 177, 45, 46, 153, 115, 55, 137, 179, 77, 228, 150, 187, 105, 207, 110, 187, 192, 178, 146, 61, 177, 45, 46, 153, 124, 53, 137, 179, 206, 91, 69, 187, 167, 140, 100, 186, 192, 178, 146, 61, 152, 238, 237, 139, 115, 55, 137, 179, 91, 170, 164, 187, 165, 35, 62, 187, 121, 157, 208, 59, 152, 238, 237, 139, 3, 54, 80, 65, 41, 64, 187, 187, 192, 17, 132, 58, 121, 157, 208, 59, 152, 238, 237, 139, 100, 56, 80, 65, 201, 53, 107, 188, 101, 130, 116, 187, 125, 128, 61, 187, 218, 21, 11, 22, 219, 169, 48, 66, 1, 155, 208, 188, 133, 190, 83, 188, 43, 27, 208, 187, 218, 21, 11, 22, 236, 50, 87, 67, 193, 43, 115, 188, 246, 7, 172, 57, 221, 55, 148, 187, 218, 21, 11, 22, 66, 179, 47, 66, 29, 16, 2, 59, 39, 172, 178, 187, 121, 157, 208, 59, 0, 148, 127, 63, 189, 56, 80, 65, 204, 49, 227, 186, 157, 34, 226, 187, 30, 33, 26, 187, 0, 148, 127, 63, 215, 54, 22, 66, 28, 16, 2, 187, 39, 172, 178, 187, 121, 157, 208, 59, 0, 148, 127, 63, 169, 54, 80, 65, 204, 49, 227, 186, 157, 34, 226, 187, 30, 33, 26, 187, 197, 221, 47, 23, 215, 54, 22, 66, 29, 16, 2, 59, 39, 172, 178, 187, 121, 157, 208, 59, 197, 221, 47, 23, 189, 56, 80, 65, 253, 201, 218, 58, 68, 243, 77, 188, 30, 33, 26, 187, 197, 221, 47, 23, 160, 56, 22, 66, 201, 53, 107, 188, 101, 130, 116, 187, 125, 128, 61, 187, 247, 233, 36, 7, 219, 169, 51, 66, 176, 216, 15, 188, 229, 15, 129, 187, 30, 33, 26, 187, 247, 233, 36, 7, 197, 161, 181, 65, 204, 49, 227, 186, 157, 34, 226, 187, 30, 33, 26, 187, 247, 233, 36, 7, 42, 49, 32, 65, 15, 228, 92, 188, 151, 255, 204, 187, 221, 55, 148, 187, 242, 209, 57, 4, 130, 44, 40, 66, 201, 53, 107, 188, 101, 130, 116, 187, 125, 128, 61, 187, 242, 209, 57, 4, 219, 169, 51, 66, 204, 49, 227, 186, 157, 34, 226, 187, 30, 33, 26, 187, 242, 209, 57, 4, 42, 49, 32, 65, 28, 16, 2, 187, 134, 132, 250, 187, 221, 55, 148, 187, 246, 171, 94, 2, 42, 50, 40, 65, 15, 228, 92, 188, 151, 255, 204, 187, 221, 55, 148, 187, 246, 171, 94, 2, 130, 44, 40, 66, 204, 49, 227, 186, 157, 34, 226, 187, 30, 33, 26, 187, 246, 171, 94, 2, 42, 49, 32, 65, 38, 113, 208, 186, 68, 223, 16, 188, 192, 178, 146, 61, 0, 136, 126, 63, 241, 54, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 0, 136, 126, 63, 9, 56, 153, 195, 78, 166, 210, 58, 142, 197, 16, 188, 192, 178, 146, 61, 0, 136, 126, 63, 154, 56, 137, 179, 112, 117, 68, 59, 120, 135, 97, 186, 192, 178, 146, 61, 32, 89, 93, 210, 25, 57, 137, 179, 64, 13, 54, 178, 150, 182, 145, 187, 106, 182, 27, 62, 32, 89, 93, 210, 9, 56, 153, 195, 143, 96, 22, 183, 170, 139, 110, 57, 192, 178, 146, 61, 32, 89, 93, 210, 8, 56, 137, 179 ),
+"array_index_data": PoolByteArray( 0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, 9, 0, 10, 0, 11, 0, 12, 0, 13, 0, 14, 0, 15, 0, 16, 0, 17, 0, 18, 0, 19, 0, 20, 0, 21, 0, 22, 0, 23, 0, 24, 0, 25, 0, 26, 0, 27, 0, 28, 0, 29, 0, 30, 0, 31, 0, 32, 0, 33, 0, 34, 0, 35, 0, 36, 0, 37, 0, 38, 0, 39, 0, 40, 0, 41, 0, 42, 0, 43, 0, 44, 0, 45, 0, 46, 0, 47, 0, 48, 0, 49, 0, 50, 0, 51, 0, 52, 0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 58, 0, 59, 0, 60, 0, 61, 0, 62, 0, 63, 0, 64, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 91, 0, 92, 0, 93, 0, 94, 0, 95, 0, 96, 0, 97, 0, 98, 0, 99, 0, 100, 0, 101, 0, 100, 0, 102, 0, 101, 0, 103, 0, 104, 0, 97, 0, 105, 0, 106, 0, 103, 0, 107, 0, 108, 0, 109, 0, 102, 0, 110, 0, 111, 0, 105, 0, 112, 0, 106, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0, 123, 0, 124, 0, 125, 0, 126, 0, 127, 0, 128, 0, 129, 0, 130, 0, 131, 0, 132, 0, 133, 0, 134, 0, 135, 0, 136, 0, 137, 0, 138, 0, 139, 0, 140, 0, 141, 0, 142, 0, 143, 0, 144, 0, 145, 0, 146, 0, 147, 0, 148, 0, 149, 0, 150, 0, 151, 0, 152, 0, 153, 0, 154, 0, 155, 0, 156, 0, 157, 0, 158, 0, 159, 0, 160, 0, 161, 0, 162, 0, 163, 0, 164, 0, 165, 0, 166, 0, 167, 0, 168, 0, 169, 0, 170, 0, 171, 0, 172, 0, 173, 0, 174, 0, 175, 0, 176, 0, 177, 0, 178, 0, 179, 0, 180, 0, 181, 0, 182, 0, 183, 0, 184, 0, 185, 0, 186, 0, 187, 0, 188, 0, 189, 0, 190, 0, 191, 0, 192, 0, 193, 0, 194, 0, 195, 0, 196, 0, 197, 0, 198, 0, 199, 0, 200, 0, 201, 0, 202, 0, 203, 0, 204, 0, 205, 0, 206, 0, 207, 0, 208, 0, 209, 0, 210, 0, 211, 0, 212, 0, 213, 0, 214, 0, 215, 0, 216, 0, 217, 0, 218, 0, 219, 0, 220, 0 ),
+"blend_shape_data": [  ],
+"format": 2194711,
+"index_count": 228,
+"material": ExtResource( 10 ),
+"name": "Wood_5",
+"primitive": 4,
+"skeleton_aabb": [  ],
+"vertex_count": 221
+}
+surfaces/1 = {
+"aabb": AABB( -0.0738922, -0.0743346, 0.027238, 0.155644, 0.140791, 0.164705 ),
+"array_data": PoolByteArray( 64, 186, 151, 59, 252, 132, 75, 187, 23, 132, 35, 61, 0, 55, 253, 228, 122, 56, 0, 60, 201, 144, 244, 188, 160, 67, 128, 188, 221, 193, 74, 61, 0, 55, 253, 228, 0, 60, 0, 56, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 0, 55, 253, 228, 122, 56, 0, 56, 201, 144, 244, 188, 160, 67, 128, 188, 221, 193, 74, 61, 26, 2, 235, 241, 0, 60, 0, 56, 64, 186, 151, 59, 252, 132, 75, 187, 23, 132, 35, 61, 26, 2, 235, 241, 122, 56, 0, 60, 5, 194, 173, 56, 112, 165, 189, 188, 86, 236, 42, 61, 26, 2, 235, 241, 0, 60, 0, 60, 242, 219, 247, 188, 52, 207, 171, 59, 215, 84, 175, 61, 34, 40, 92, 221, 0, 0, 0, 60, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 34, 40, 92, 221, 122, 56, 0, 56, 109, 196, 19, 189, 53, 179, 178, 188, 88, 246, 226, 61, 34, 40, 92, 221, 0, 0, 0, 56, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 251, 31, 103, 199, 122, 56, 0, 56, 242, 219, 247, 188, 52, 207, 171, 59, 215, 84, 175, 61, 251, 31, 103, 199, 0, 0, 0, 60, 87, 187, 130, 57, 117, 14, 220, 58, 84, 235, 181, 61, 251, 31, 103, 199, 122, 56, 0, 60, 48, 247, 74, 189, 231, 171, 245, 187, 65, 44, 149, 61, 155, 181, 74, 24, 0, 0, 0, 56, 64, 174, 57, 189, 178, 167, 111, 189, 51, 78, 192, 61, 155, 181, 74, 24, 122, 56, 0, 0, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 155, 181, 74, 24, 122, 56, 0, 56, 64, 174, 57, 189, 178, 167, 111, 189, 51, 78, 192, 61, 164, 141, 68, 39, 122, 56, 0, 0, 48, 247, 74, 189, 231, 171, 245, 187, 65, 44, 149, 61, 164, 141, 68, 39, 0, 0, 0, 56, 205, 84, 151, 189, 6, 48, 29, 189, 18, 69, 183, 61, 164, 141, 68, 39, 0, 0, 0, 0, 109, 196, 19, 189, 53, 179, 178, 188, 88, 246, 226, 61, 188, 167, 92, 35, 0, 0, 0, 56, 196, 157, 58, 188, 144, 198, 86, 189, 43, 151, 14, 62, 188, 167, 92, 35, 122, 56, 0, 0, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 188, 167, 92, 35, 122, 56, 0, 56, 196, 157, 58, 188, 144, 198, 86, 189, 43, 151, 14, 62, 191, 130, 103, 57, 122, 56, 0, 0, 109, 196, 19, 189, 53, 179, 178, 188, 88, 246, 226, 61, 191, 130, 103, 57, 0, 0, 0, 56, 225, 154, 43, 189, 29, 45, 72, 189, 237, 75, 11, 62, 191, 130, 103, 57, 0, 0, 0, 0, 193, 167, 42, 60, 56, 121, 183, 60, 146, 23, 26, 61, 114, 144, 235, 15, 0, 0, 0, 60, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 114, 144, 235, 15, 122, 56, 0, 56, 64, 186, 151, 59, 252, 132, 75, 187, 23, 132, 35, 61, 114, 144, 235, 15, 122, 56, 0, 60, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 168, 116, 200, 12, 122, 56, 0, 56, 193, 167, 42, 60, 56, 121, 183, 60, 146, 23, 26, 61, 168, 116, 200, 12, 0, 0, 0, 60, 170, 234, 159, 188, 9, 219, 244, 60, 27, 237, 57, 61, 168, 116, 200, 12, 0, 0, 0, 56, 142, 137, 206, 188, 23, 138, 191, 60, 225, 38, 102, 61, 44, 6, 74, 232, 0, 0, 0, 60, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 44, 6, 74, 232, 122, 56, 0, 56, 48, 247, 74, 189, 231, 171, 245, 187, 65, 44, 149, 61, 44, 6, 74, 232, 0, 0, 0, 56, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 244, 6, 68, 217, 122, 56, 0, 56, 142, 137, 206, 188, 23, 138, 191, 60, 225, 38, 102, 61, 244, 6, 68, 217, 0, 0, 0, 60, 43, 105, 91, 59, 243, 213, 84, 59, 37, 57, 120, 61, 244, 6, 68, 217, 122, 56, 0, 60, 193, 167, 42, 60, 56, 121, 183, 60, 146, 23, 26, 61, 10, 218, 200, 244, 0, 0, 0, 60, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 10, 218, 200, 244, 122, 56, 0, 56, 170, 234, 159, 188, 9, 219, 244, 60, 27, 237, 57, 61, 10, 218, 200, 244, 0, 0, 0, 56, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 242, 12, 235, 241, 122, 56, 0, 56, 193, 167, 42, 60, 56, 121, 183, 60, 146, 23, 26, 61, 242, 12, 235, 241, 0, 0, 0, 60, 64, 186, 151, 59, 252, 132, 75, 187, 23, 132, 35, 61, 242, 12, 235, 241, 122, 56, 0, 60, 109, 196, 19, 189, 53, 179, 178, 188, 88, 246, 226, 61, 0, 61, 103, 199, 0, 0, 0, 56, 196, 157, 58, 188, 144, 198, 86, 189, 43, 151, 14, 62, 0, 61, 103, 199, 122, 56, 0, 0, 225, 154, 43, 189, 29, 45, 72, 189, 237, 75, 11, 62, 0, 61, 103, 199, 0, 0, 0, 0, 196, 157, 58, 188, 144, 198, 86, 189, 43, 151, 14, 62, 37, 58, 92, 221, 122, 56, 0, 0, 109, 196, 19, 189, 53, 179, 178, 188, 88, 246, 226, 61, 37, 58, 92, 221, 0, 0, 0, 56, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 37, 58, 92, 221, 122, 56, 0, 56, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 84, 93, 251, 97, 122, 56, 0, 56, 88, 109, 167, 61, 120, 182, 201, 59, 66, 81, 248, 61, 84, 93, 251, 97, 0, 60, 0, 0, 89, 25, 36, 61, 164, 187, 140, 60, 48, 236, 210, 61, 84, 93, 251, 97, 0, 60, 0, 56, 88, 109, 167, 61, 120, 182, 201, 59, 66, 81, 248, 61, 121, 193, 19, 110, 0, 60, 0, 0, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 121, 193, 19, 110, 122, 56, 0, 56, 37, 222, 154, 61, 212, 41, 191, 188, 74, 135, 240, 61, 121, 193, 19, 110, 122, 56, 0, 0, 120, 182, 118, 189, 177, 169, 159, 187, 169, 128, 67, 62, 0, 130, 125, 63, 0, 0, 0, 0, 28, 6, 63, 61, 164, 187, 148, 187, 56, 213, 173, 61, 0, 130, 125, 63, 0, 60, 246, 57, 107, 122, 114, 189, 151, 250, 153, 187, 70, 189, 171, 61, 0, 130, 125, 63, 0, 0, 246, 57, 28, 6, 63, 61, 164, 187, 148, 187, 56, 213, 173, 61, 0, 130, 125, 63, 0, 60, 246, 57, 120, 182, 118, 189, 177, 169, 159, 187, 169, 128, 67, 62, 0, 130, 125, 63, 0, 0, 0, 0, 15, 202, 58, 61, 190, 106, 154, 187, 161, 140, 68, 62, 0, 130, 125, 63, 0, 60, 0, 0, 170, 234, 159, 188, 9, 219, 244, 60, 27, 237, 57, 61, 166, 92, 200, 12, 0, 0, 0, 56, 69, 71, 98, 189, 7, 166, 66, 60, 39, 47, 99, 61, 166, 92, 200, 12, 122, 56, 0, 0, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 166, 92, 200, 12, 122, 56, 0, 56, 69, 71, 98, 189, 7, 166, 66, 60, 39, 47, 99, 61, 132, 156, 235, 15, 122, 56, 0, 0, 170, 234, 159, 188, 9, 219, 244, 60, 27, 237, 57, 61, 132, 156, 235, 15, 0, 0, 0, 56, 156, 148, 74, 189, 110, 30, 25, 61, 162, 194, 89, 61, 132, 156, 235, 15, 0, 0, 0, 0, 48, 247, 74, 189, 231, 171, 245, 187, 65, 44, 149, 61, 11, 34, 68, 217, 0, 0, 0, 56, 64, 174, 57, 189, 178, 167, 111, 189, 51, 78, 192, 61, 11, 34, 68, 217, 122, 56, 0, 0, 205, 84, 151, 189, 6, 48, 29, 189, 18, 69, 183, 61, 11, 34, 68, 217, 0, 0, 0, 0, 64, 174, 57, 189, 178, 167, 111, 189, 51, 78, 192, 61, 51, 25, 74, 232, 122, 56, 0, 0, 48, 247, 74, 189, 231, 171, 245, 187, 65, 44, 149, 61, 51, 25, 74, 232, 0, 0, 0, 56, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 51, 25, 74, 232, 122, 56, 0, 56, 170, 234, 159, 188, 9, 219, 244, 60, 27, 237, 57, 61, 26, 2, 235, 241, 0, 0, 0, 56, 69, 71, 98, 189, 7, 166, 66, 60, 39, 47, 99, 61, 26, 2, 235, 241, 122, 56, 0, 0, 156, 148, 74, 189, 110, 30, 25, 61, 162, 194, 89, 61, 26, 2, 235, 241, 0, 0, 0, 0, 69, 71, 98, 189, 7, 166, 66, 60, 39, 47, 99, 61, 34, 220, 200, 244, 122, 56, 0, 0, 170, 234, 159, 188, 9, 219, 244, 60, 27, 237, 57, 61, 34, 220, 200, 244, 0, 0, 0, 56, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 34, 220, 200, 244, 122, 56, 0, 56, 120, 182, 118, 189, 177, 169, 159, 187, 169, 128, 67, 62, 0, 126, 125, 193, 0, 0, 0, 0, 28, 6, 63, 61, 164, 187, 148, 187, 56, 213, 173, 61, 0, 126, 125, 193, 0, 60, 246, 57, 15, 202, 58, 61, 190, 106, 154, 187, 161, 140, 68, 62, 0, 126, 125, 193, 0, 60, 0, 0, 28, 6, 63, 61, 164, 187, 148, 187, 56, 213, 173, 61, 0, 126, 125, 193, 0, 60, 246, 57, 120, 182, 118, 189, 177, 169, 159, 187, 169, 128, 67, 62, 0, 126, 125, 193, 0, 0, 0, 0, 107, 122, 114, 189, 151, 250, 153, 187, 70, 189, 171, 61, 0, 126, 125, 193, 0, 0, 246, 57, 7, 51, 254, 187, 120, 220, 168, 186, 36, 189, 165, 61, 123, 88, 19, 110, 122, 56, 0, 60, 89, 25, 36, 61, 164, 187, 140, 60, 48, 236, 210, 61, 123, 88, 19, 110, 0, 60, 0, 56, 166, 255, 212, 186, 170, 9, 231, 60, 29, 135, 173, 61, 123, 88, 19, 110, 0, 60, 0, 60, 89, 25, 36, 61, 164, 187, 140, 60, 48, 236, 210, 61, 74, 117, 251, 97, 0, 60, 0, 56, 7, 51, 254, 187, 120, 220, 168, 186, 36, 189, 165, 61, 74, 117, 251, 97, 122, 56, 0, 60, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 74, 117, 251, 97, 122, 56, 0, 56, 89, 136, 99, 59, 132, 13, 140, 189, 169, 128, 67, 62, 126, 0, 0, 126, 0, 0, 0, 0, 44, 172, 77, 59, 138, 161, 29, 61, 56, 213, 173, 61, 126, 0, 0, 126, 0, 60, 246, 57, 38, 42, 88, 59, 126, 239, 137, 189, 70, 189, 171, 61, 126, 0, 0, 126, 0, 0, 246, 57, 44, 172, 77, 59, 138, 161, 29, 61, 56, 213, 173, 61, 126, 0, 0, 126, 0, 60, 246, 57, 89, 136, 99, 59, 132, 13, 140, 189, 169, 128, 67, 62, 126, 0, 0, 126, 0, 0, 0, 0, 97, 10, 89, 59, 125, 101, 25, 61, 161, 140, 68, 62, 126, 0, 0, 126, 0, 60, 0, 0, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 16, 220, 77, 21, 122, 56, 0, 56, 9, 21, 143, 61, 253, 172, 186, 60, 112, 229, 49, 61, 16, 220, 77, 21, 0, 60, 0, 0, 199, 84, 38, 61, 123, 84, 33, 55, 176, 56, 30, 61, 16, 220, 77, 21, 0, 60, 0, 56, 9, 21, 143, 61, 253, 172, 186, 60, 112, 229, 49, 61, 14, 24, 50, 30, 0, 60, 0, 0, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 14, 24, 50, 30, 122, 56, 0, 56, 158, 211, 98, 61, 50, 14, 44, 61, 214, 5, 38, 61, 14, 24, 50, 30, 122, 56, 0, 0, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 193, 5, 19, 146, 122, 56, 0, 56, 88, 109, 167, 61, 120, 182, 201, 59, 66, 81, 248, 61, 193, 5, 19, 146, 0, 60, 0, 0, 37, 222, 154, 61, 212, 41, 191, 188, 74, 135, 240, 61, 193, 5, 19, 146, 122, 56, 0, 0, 88, 109, 167, 61, 120, 182, 201, 59, 66, 81, 248, 61, 223, 214, 251, 159, 0, 60, 0, 0, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 223, 214, 251, 159, 122, 56, 0, 56, 89, 25, 36, 61, 164, 187, 140, 60, 48, 236, 210, 61, 223, 214, 251, 159, 0, 60, 0, 56, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 154, 144, 50, 226, 122, 56, 0, 56, 9, 21, 143, 61, 253, 172, 186, 60, 112, 229, 49, 61, 154, 144, 50, 226, 0, 60, 0, 0, 158, 211, 98, 61, 50, 14, 44, 61, 214, 5, 38, 61, 154, 144, 50, 226, 122, 56, 0, 0, 9, 21, 143, 61, 253, 172, 186, 60, 112, 229, 49, 61, 166, 110, 77, 235, 0, 60, 0, 0, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 166, 110, 77, 235, 122, 56, 0, 56, 199, 84, 38, 61, 123, 84, 33, 55, 176, 56, 30, 61, 166, 110, 77, 235, 0, 60, 0, 56, 89, 136, 99, 59, 132, 13, 140, 189, 169, 128, 67, 62, 130, 0, 0, 130, 0, 0, 0, 0, 44, 172, 77, 59, 138, 161, 29, 61, 56, 213, 173, 61, 130, 0, 0, 130, 0, 60, 246, 57, 97, 10, 89, 59, 125, 101, 25, 61, 161, 140, 68, 62, 130, 0, 0, 130, 0, 60, 0, 0, 44, 172, 77, 59, 138, 161, 29, 61, 56, 213, 173, 61, 130, 0, 0, 130, 0, 60, 246, 57, 89, 136, 99, 59, 132, 13, 140, 189, 169, 128, 67, 62, 130, 0, 0, 130, 0, 0, 0, 0, 38, 42, 88, 59, 126, 239, 137, 189, 70, 189, 171, 61, 130, 0, 0, 130, 0, 0, 246, 57, 18, 238, 126, 188, 247, 245, 30, 189, 72, 212, 155, 61, 112, 125, 19, 110, 0, 0, 0, 60, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 112, 125, 19, 110, 122, 56, 0, 56, 7, 51, 254, 187, 120, 220, 168, 186, 36, 189, 165, 61, 112, 125, 19, 110, 122, 56, 0, 60, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 91, 151, 56, 111, 122, 56, 0, 56, 18, 238, 126, 188, 247, 245, 30, 189, 72, 212, 155, 61, 91, 151, 56, 111, 0, 0, 0, 60, 162, 11, 214, 60, 249, 28, 76, 189, 91, 57, 193, 61, 91, 151, 56, 111, 0, 0, 0, 56, 234, 52, 159, 188, 123, 66, 134, 189, 107, 3, 249, 61, 72, 132, 104, 81, 0, 0, 0, 0, 92, 11, 235, 60, 253, 191, 139, 59, 153, 155, 139, 61, 72, 132, 104, 81, 0, 60, 246, 57, 48, 211, 31, 189, 100, 83, 72, 188, 16, 220, 160, 61, 72, 132, 104, 81, 0, 0, 246, 57, 92, 11, 235, 60, 253, 191, 139, 59, 153, 155, 139, 61, 72, 132, 104, 81, 0, 60, 246, 57, 234, 52, 159, 188, 123, 66, 134, 189, 107, 3, 249, 61, 72, 132, 104, 81, 0, 0, 0, 0, 105, 190, 69, 61, 30, 248, 72, 189, 244, 194, 227, 61, 72, 132, 104, 81, 0, 60, 0, 0, 53, 111, 77, 187, 21, 170, 104, 187, 169, 88, 253, 60, 238, 1, 50, 30, 122, 56, 0, 60, 199, 84, 38, 61, 123, 84, 33, 55, 176, 56, 30, 61, 238, 1, 50, 30, 0, 60, 0, 56, 252, 253, 57, 60, 166, 132, 186, 188, 240, 139, 10, 61, 238, 1, 50, 30, 0, 60, 0, 60, 199, 84, 38, 61, 123, 84, 33, 55, 176, 56, 30, 61, 249, 204, 77, 21, 0, 60, 0, 56, 53, 111, 77, 187, 21, 170, 104, 187, 169, 88, 253, 60, 249, 204, 77, 21, 122, 56, 0, 60, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 249, 204, 77, 21, 122, 56, 0, 56, 7, 51, 254, 187, 120, 220, 168, 186, 36, 189, 165, 61, 247, 204, 251, 159, 122, 56, 0, 60, 89, 25, 36, 61, 164, 187, 140, 60, 48, 236, 210, 61, 247, 204, 251, 159, 0, 60, 0, 56, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 247, 204, 251, 159, 122, 56, 0, 56, 89, 25, 36, 61, 164, 187, 140, 60, 48, 236, 210, 61, 218, 253, 19, 146, 0, 60, 0, 56, 7, 51, 254, 187, 120, 220, 168, 186, 36, 189, 165, 61, 218, 253, 19, 146, 122, 56, 0, 60, 166, 255, 212, 186, 170, 9, 231, 60, 29, 135, 173, 61, 218, 253, 19, 146, 0, 60, 0, 60, 53, 111, 77, 187, 21, 170, 104, 187, 169, 88, 253, 60, 74, 119, 77, 235, 122, 56, 0, 60, 199, 84, 38, 61, 123, 84, 33, 55, 176, 56, 30, 61, 74, 119, 77, 235, 0, 60, 0, 56, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 74, 119, 77, 235, 122, 56, 0, 56, 199, 84, 38, 61, 123, 84, 33, 55, 176, 56, 30, 61, 125, 148, 50, 226, 0, 60, 0, 56, 53, 111, 77, 187, 21, 170, 104, 187, 169, 88, 253, 60, 125, 148, 50, 226, 122, 56, 0, 60, 252, 253, 57, 60, 166, 132, 186, 188, 240, 139, 10, 61, 125, 148, 50, 226, 0, 60, 0, 60, 234, 52, 159, 188, 123, 66, 134, 189, 107, 3, 249, 61, 254, 54, 104, 175, 0, 0, 0, 0, 92, 11, 235, 60, 253, 191, 139, 59, 153, 155, 139, 61, 254, 54, 104, 175, 0, 60, 246, 57, 105, 190, 69, 61, 30, 248, 72, 189, 244, 194, 227, 61, 254, 54, 104, 175, 0, 60, 0, 0, 92, 11, 235, 60, 253, 191, 139, 59, 153, 155, 139, 61, 254, 54, 104, 175, 0, 60, 246, 57, 234, 52, 159, 188, 123, 66, 134, 189, 107, 3, 249, 61, 254, 54, 104, 175, 0, 0, 0, 0, 48, 211, 31, 189, 100, 83, 72, 188, 16, 220, 160, 61, 254, 54, 104, 175, 0, 0, 246, 57, 162, 11, 214, 60, 249, 28, 76, 189, 91, 57, 193, 61, 90, 172, 56, 111, 0, 0, 0, 56, 37, 222, 154, 61, 212, 41, 191, 188, 74, 135, 240, 61, 90, 172, 56, 111, 122, 56, 0, 0, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 90, 172, 56, 111, 122, 56, 0, 56, 37, 222, 154, 61, 212, 41, 191, 188, 74, 135, 240, 61, 123, 88, 19, 110, 122, 56, 0, 0, 162, 11, 214, 60, 249, 28, 76, 189, 91, 57, 193, 61, 123, 88, 19, 110, 0, 0, 0, 56, 147, 227, 138, 61, 253, 67, 121, 189, 110, 158, 230, 61, 123, 88, 19, 110, 0, 0, 0, 0, 47, 11, 135, 61, 171, 214, 249, 59, 110, 3, 249, 61, 102, 85, 190, 99, 0, 0, 0, 0, 142, 49, 150, 188, 253, 205, 139, 60, 153, 155, 139, 61, 102, 85, 190, 99, 0, 60, 246, 57, 234, 225, 230, 60, 37, 167, 14, 189, 16, 220, 160, 61, 102, 85, 190, 99, 0, 0, 246, 57, 68, 25, 159, 60, 249, 200, 115, 61, 247, 194, 227, 61, 102, 85, 190, 99, 0, 60, 0, 0, 91, 170, 176, 188, 55, 55, 171, 60, 78, 34, 223, 60, 218, 238, 50, 30, 0, 0, 0, 60, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 218, 238, 50, 30, 122, 56, 0, 56, 53, 111, 77, 187, 21, 170, 104, 187, 169, 88, 253, 60, 218, 238, 50, 30, 122, 56, 0, 60, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 223, 30, 32, 37, 122, 56, 0, 56, 91, 170, 176, 188, 55, 55, 171, 60, 78, 34, 223, 60, 223, 30, 32, 37, 0, 0, 0, 60, 217, 0, 252, 59, 5, 232, 50, 61, 231, 61, 3, 61, 223, 30, 32, 37, 0, 0, 0, 56, 18, 238, 126, 188, 247, 245, 30, 189, 72, 212, 155, 61, 235, 35, 56, 145, 0, 0, 0, 60, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 235, 35, 56, 145, 122, 56, 0, 56, 162, 11, 214, 60, 249, 28, 76, 189, 91, 57, 193, 61, 235, 35, 56, 145, 0, 0, 0, 56, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 255, 242, 19, 146, 122, 56, 0, 56, 18, 238, 126, 188, 247, 245, 30, 189, 72, 212, 155, 61, 255, 242, 19, 146, 0, 0, 0, 60, 7, 51, 254, 187, 120, 220, 168, 186, 36, 189, 165, 61, 255, 242, 19, 146, 122, 56, 0, 60, 91, 170, 176, 188, 55, 55, 171, 60, 78, 34, 223, 60, 96, 163, 32, 219, 0, 0, 0, 60, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 96, 163, 32, 219, 122, 56, 0, 56, 217, 0, 252, 59, 5, 232, 50, 61, 231, 61, 3, 61, 96, 163, 32, 219, 0, 0, 0, 56, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 108, 88, 50, 226, 122, 56, 0, 56, 91, 170, 176, 188, 55, 55, 171, 60, 78, 34, 223, 60, 108, 88, 50, 226, 0, 0, 0, 60, 53, 111, 77, 187, 21, 170, 104, 187, 169, 88, 253, 60, 108, 88, 50, 226, 122, 56, 0, 60, 47, 11, 135, 61, 171, 214, 249, 59, 110, 3, 249, 61, 215, 232, 190, 157, 0, 0, 0, 0, 142, 49, 150, 188, 253, 205, 139, 60, 153, 155, 139, 61, 215, 232, 190, 157, 0, 60, 246, 57, 68, 25, 159, 60, 249, 200, 115, 61, 247, 194, 227, 61, 215, 232, 190, 157, 0, 60, 0, 0, 234, 225, 230, 60, 37, 167, 14, 189, 16, 220, 160, 61, 215, 232, 190, 157, 0, 0, 246, 57, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 89, 77, 238, 97, 122, 56, 0, 56, 219, 202, 132, 61, 94, 78, 252, 59, 171, 2, 52, 62, 89, 77, 238, 97, 0, 60, 0, 0, 150, 106, 1, 61, 121, 46, 142, 60, 45, 184, 19, 62, 89, 77, 238, 97, 0, 60, 0, 56, 219, 202, 132, 61, 94, 78, 252, 59, 171, 2, 52, 62, 115, 210, 18, 112, 0, 60, 0, 0, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 115, 210, 18, 112, 122, 56, 0, 56, 222, 146, 114, 61, 97, 248, 179, 188, 160, 197, 48, 62, 115, 210, 18, 112, 122, 56, 0, 0, 30, 104, 182, 188, 32, 102, 108, 61, 56, 14, 219, 61, 165, 94, 195, 24, 0, 0, 0, 0, 178, 227, 114, 188, 165, 53, 219, 188, 193, 76, 91, 61, 165, 94, 195, 24, 0, 60, 246, 57, 212, 189, 219, 60, 227, 136, 238, 60, 215, 230, 130, 61, 165, 94, 195, 24, 0, 0, 246, 57, 178, 227, 114, 188, 165, 53, 219, 188, 193, 76, 91, 61, 165, 94, 195, 24, 0, 60, 246, 57, 30, 104, 182, 188, 32, 102, 108, 61, 56, 14, 219, 61, 165, 94, 195, 24, 0, 0, 0, 0, 243, 229, 130, 189, 138, 219, 240, 58, 192, 205, 197, 61, 165, 94, 195, 24, 0, 60, 0, 0, 217, 0, 252, 59, 5, 232, 50, 61, 231, 61, 3, 61, 246, 49, 32, 37, 0, 0, 0, 56, 158, 211, 98, 61, 50, 14, 44, 61, 214, 5, 38, 61, 246, 49, 32, 37, 122, 56, 0, 0, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 246, 49, 32, 37, 122, 56, 0, 56, 158, 211, 98, 61, 50, 14, 44, 61, 214, 5, 38, 61, 238, 1, 50, 30, 122, 56, 0, 0, 217, 0, 252, 59, 5, 232, 50, 61, 231, 61, 3, 61, 238, 1, 50, 30, 0, 0, 0, 56, 101, 85, 23, 61, 55, 26, 136, 61, 167, 234, 22, 61, 238, 1, 50, 30, 0, 0, 0, 0, 162, 11, 214, 60, 249, 28, 76, 189, 91, 57, 193, 61, 218, 253, 19, 146, 0, 0, 0, 56, 37, 222, 154, 61, 212, 41, 191, 188, 74, 135, 240, 61, 218, 253, 19, 146, 122, 56, 0, 0, 147, 227, 138, 61, 253, 67, 121, 189, 110, 158, 230, 61, 218, 253, 19, 146, 0, 0, 0, 0, 37, 222, 154, 61, 212, 41, 191, 188, 74, 135, 240, 61, 214, 36, 56, 145, 122, 56, 0, 0, 162, 11, 214, 60, 249, 28, 76, 189, 91, 57, 193, 61, 214, 36, 56, 145, 0, 0, 0, 56, 77, 207, 45, 61, 166, 137, 62, 188, 146, 55, 164, 61, 214, 36, 56, 145, 122, 56, 0, 56, 217, 0, 252, 59, 5, 232, 50, 61, 231, 61, 3, 61, 125, 148, 50, 226, 0, 0, 0, 56, 158, 211, 98, 61, 50, 14, 44, 61, 214, 5, 38, 61, 125, 148, 50, 226, 122, 56, 0, 0, 101, 85, 23, 61, 55, 26, 136, 61, 167, 234, 22, 61, 125, 148, 50, 226, 0, 0, 0, 0, 158, 211, 98, 61, 50, 14, 44, 61, 214, 5, 38, 61, 77, 140, 32, 219, 122, 56, 0, 0, 217, 0, 252, 59, 5, 232, 50, 61, 231, 61, 3, 61, 77, 140, 32, 219, 0, 0, 0, 56, 96, 47, 190, 60, 82, 205, 159, 60, 106, 104, 85, 61, 77, 140, 32, 219, 122, 56, 0, 56, 30, 104, 182, 188, 32, 102, 108, 61, 56, 14, 219, 61, 32, 221, 195, 232, 0, 0, 0, 0, 178, 227, 114, 188, 165, 53, 219, 188, 193, 76, 91, 61, 32, 221, 195, 232, 0, 60, 246, 57, 243, 229, 130, 189, 138, 219, 240, 58, 192, 205, 197, 61, 32, 221, 195, 232, 0, 60, 0, 0, 178, 227, 114, 188, 165, 53, 219, 188, 193, 76, 91, 61, 32, 221, 195, 232, 0, 60, 246, 57, 30, 104, 182, 188, 32, 102, 108, 61, 56, 14, 219, 61, 32, 221, 195, 232, 0, 0, 0, 0, 212, 189, 219, 60, 227, 136, 238, 60, 215, 230, 130, 61, 32, 221, 195, 232, 0, 0, 246, 57, 231, 26, 238, 187, 240, 20, 46, 187, 69, 97, 224, 61, 122, 189, 18, 112, 122, 56, 0, 60, 150, 106, 1, 61, 121, 46, 142, 60, 45, 184, 19, 62, 122, 189, 18, 112, 0, 60, 0, 56, 228, 16, 216, 186, 91, 73, 221, 60, 93, 219, 230, 61, 122, 189, 18, 112, 0, 60, 0, 60, 150, 106, 1, 61, 121, 46, 142, 60, 45, 184, 19, 62, 85, 98, 238, 97, 0, 60, 0, 56, 231, 26, 238, 187, 240, 20, 46, 187, 69, 97, 224, 61, 85, 98, 238, 97, 122, 56, 0, 60, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 85, 98, 238, 97, 122, 56, 0, 56, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 205, 2, 165, 27, 122, 56, 0, 56, 123, 203, 1, 58, 233, 79, 143, 189, 171, 46, 139, 61, 205, 2, 165, 27, 0, 60, 0, 0, 124, 51, 90, 188, 89, 227, 23, 189, 20, 147, 104, 61, 205, 2, 165, 27, 0, 60, 0, 56, 123, 203, 1, 58, 233, 79, 143, 189, 171, 46, 139, 61, 9, 247, 169, 45, 0, 60, 0, 0, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 9, 247, 169, 45, 122, 56, 0, 56, 123, 6, 188, 60, 189, 130, 121, 189, 4, 245, 136, 61, 9, 247, 169, 45, 122, 56, 0, 0, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 110, 175, 59, 80, 122, 56, 0, 56, 175, 213, 45, 61, 180, 13, 92, 189, 142, 80, 136, 61, 110, 175, 59, 80, 0, 60, 0, 0, 117, 17, 5, 61, 50, 8, 173, 188, 123, 184, 81, 61, 110, 175, 59, 80, 0, 60, 0, 56, 175, 213, 45, 61, 180, 13, 92, 189, 142, 80, 136, 61, 65, 140, 102, 80, 0, 60, 0, 0, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 65, 140, 102, 80, 122, 56, 0, 56, 58, 83, 156, 60, 221, 23, 117, 189, 212, 188, 140, 61, 65, 140, 102, 80, 122, 56, 0, 0, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 176, 11, 18, 144, 122, 56, 0, 56, 219, 202, 132, 61, 94, 78, 252, 59, 171, 2, 52, 62, 176, 11, 18, 144, 0, 60, 0, 0, 222, 146, 114, 61, 97, 248, 179, 188, 160, 197, 48, 62, 176, 11, 18, 144, 122, 56, 0, 0, 219, 202, 132, 61, 94, 78, 252, 59, 171, 2, 52, 62, 207, 219, 238, 159, 0, 60, 0, 0, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 207, 219, 238, 159, 122, 56, 0, 56, 150, 106, 1, 61, 121, 46, 142, 60, 45, 184, 19, 62, 207, 219, 238, 159, 0, 60, 0, 56, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 246, 61, 102, 176, 122, 56, 0, 56, 175, 213, 45, 61, 180, 13, 92, 189, 142, 80, 136, 61, 246, 61, 102, 176, 0, 60, 0, 0, 58, 83, 156, 60, 221, 23, 117, 189, 212, 188, 140, 61, 246, 61, 102, 176, 122, 56, 0, 0, 175, 213, 45, 61, 180, 13, 92, 189, 142, 80, 136, 61, 211, 16, 59, 176, 0, 60, 0, 0, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 211, 16, 59, 176, 122, 56, 0, 56, 117, 17, 5, 61, 50, 8, 173, 188, 123, 184, 81, 61, 211, 16, 59, 176, 0, 60, 0, 56, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 139, 117, 169, 211, 122, 56, 0, 56, 123, 203, 1, 58, 233, 79, 143, 189, 171, 46, 139, 61, 139, 117, 169, 211, 0, 60, 0, 0, 123, 6, 188, 60, 189, 130, 121, 189, 4, 245, 136, 61, 139, 117, 169, 211, 122, 56, 0, 0, 123, 203, 1, 58, 233, 79, 143, 189, 171, 46, 139, 61, 124, 181, 165, 229, 0, 60, 0, 0, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 124, 181, 165, 229, 122, 56, 0, 56, 124, 51, 90, 188, 89, 227, 23, 189, 20, 147, 104, 61, 124, 181, 165, 229, 0, 60, 0, 56, 50, 40, 108, 188, 92, 125, 37, 189, 189, 35, 216, 61, 123, 94, 18, 112, 0, 0, 0, 60, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 123, 94, 18, 112, 122, 56, 0, 56, 231, 26, 238, 187, 240, 20, 46, 187, 69, 97, 224, 61, 123, 94, 18, 112, 122, 56, 0, 60, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 89, 167, 59, 107, 122, 56, 0, 56, 50, 40, 108, 188, 92, 125, 37, 189, 189, 35, 216, 61, 89, 167, 59, 107, 0, 0, 0, 60, 34, 66, 154, 60, 204, 10, 77, 189, 93, 92, 12, 62, 89, 167, 59, 107, 0, 0, 0, 56, 224, 38, 153, 187, 174, 177, 159, 59, 132, 85, 54, 61, 250, 28, 169, 45, 122, 56, 0, 60, 124, 51, 90, 188, 89, 227, 23, 189, 20, 147, 104, 61, 250, 28, 169, 45, 0, 60, 0, 56, 215, 65, 222, 188, 5, 55, 137, 187, 210, 200, 58, 61, 250, 28, 169, 45, 0, 60, 0, 60, 124, 51, 90, 188, 89, 227, 23, 189, 20, 147, 104, 61, 205, 25, 165, 27, 0, 60, 0, 56, 224, 38, 153, 187, 174, 177, 159, 59, 132, 85, 54, 61, 205, 25, 165, 27, 122, 56, 0, 60, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 205, 25, 165, 27, 122, 56, 0, 56, 169, 181, 87, 186, 207, 218, 175, 59, 99, 168, 27, 61, 87, 132, 102, 80, 122, 56, 0, 60, 117, 17, 5, 61, 50, 8, 173, 188, 123, 184, 81, 61, 87, 132, 102, 80, 0, 60, 0, 56, 119, 154, 184, 60, 11, 22, 60, 60, 217, 207, 18, 61, 87, 132, 102, 80, 0, 60, 0, 60, 117, 17, 5, 61, 50, 8, 173, 188, 123, 184, 81, 61, 117, 88, 59, 80, 0, 60, 0, 56, 169, 181, 87, 186, 207, 218, 175, 59, 99, 168, 27, 61, 117, 88, 59, 80, 122, 56, 0, 60, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 117, 88, 59, 80, 122, 56, 0, 56, 231, 26, 238, 187, 240, 20, 46, 187, 69, 97, 224, 61, 228, 215, 238, 159, 122, 56, 0, 60, 150, 106, 1, 61, 121, 46, 142, 60, 45, 184, 19, 62, 228, 215, 238, 159, 0, 60, 0, 56, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 228, 215, 238, 159, 122, 56, 0, 56, 150, 106, 1, 61, 121, 46, 142, 60, 45, 184, 19, 62, 197, 4, 18, 144, 0, 60, 0, 56, 231, 26, 238, 187, 240, 20, 46, 187, 69, 97, 224, 61, 197, 4, 18, 144, 122, 56, 0, 60, 228, 16, 216, 186, 91, 73, 221, 60, 93, 219, 230, 61, 197, 4, 18, 144, 0, 60, 0, 60, 169, 181, 87, 186, 207, 218, 175, 59, 99, 168, 27, 61, 218, 247, 59, 176, 122, 56, 0, 60, 117, 17, 5, 61, 50, 8, 173, 188, 123, 184, 81, 61, 218, 247, 59, 176, 0, 60, 0, 56, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 218, 247, 59, 176, 122, 56, 0, 56, 117, 17, 5, 61, 50, 8, 173, 188, 123, 184, 81, 61, 254, 39, 102, 176, 0, 60, 0, 56, 169, 181, 87, 186, 207, 218, 175, 59, 99, 168, 27, 61, 254, 39, 102, 176, 122, 56, 0, 60, 119, 154, 184, 60, 11, 22, 60, 60, 217, 207, 18, 61, 254, 39, 102, 176, 0, 60, 0, 60, 224, 38, 153, 187, 174, 177, 159, 59, 132, 85, 54, 61, 101, 181, 165, 229, 122, 56, 0, 60, 124, 51, 90, 188, 89, 227, 23, 189, 20, 147, 104, 61, 101, 181, 165, 229, 0, 60, 0, 56, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 101, 181, 165, 229, 122, 56, 0, 56, 124, 51, 90, 188, 89, 227, 23, 189, 20, 147, 104, 61, 98, 136, 169, 211, 0, 60, 0, 56, 224, 38, 153, 187, 174, 177, 159, 59, 132, 85, 54, 61, 98, 136, 169, 211, 122, 56, 0, 60, 215, 65, 222, 188, 5, 55, 137, 187, 210, 200, 58, 61, 98, 136, 169, 211, 0, 60, 0, 60, 34, 66, 154, 60, 204, 10, 77, 189, 93, 92, 12, 62, 85, 185, 59, 107, 0, 0, 0, 56, 222, 146, 114, 61, 97, 248, 179, 188, 160, 197, 48, 62, 85, 185, 59, 107, 122, 56, 0, 0, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 85, 185, 59, 107, 122, 56, 0, 56, 222, 146, 114, 61, 97, 248, 179, 188, 160, 197, 48, 62, 122, 189, 18, 112, 122, 56, 0, 0, 34, 66, 154, 60, 204, 10, 77, 189, 93, 92, 12, 62, 122, 189, 18, 112, 0, 0, 0, 56, 48, 76, 85, 61, 61, 152, 116, 189, 220, 166, 44, 62, 122, 189, 18, 112, 0, 0, 0, 0, 225, 196, 195, 60, 41, 92, 134, 60, 5, 172, 48, 61, 239, 49, 169, 45, 0, 0, 0, 60, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 239, 49, 169, 45, 122, 56, 0, 56, 224, 38, 153, 187, 174, 177, 159, 59, 132, 85, 54, 61, 239, 49, 169, 45, 122, 56, 0, 60, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 29, 33, 186, 55, 122, 56, 0, 56, 225, 196, 195, 60, 41, 92, 134, 60, 5, 172, 48, 61, 29, 33, 186, 55, 0, 0, 0, 60, 126, 118, 26, 61, 199, 28, 135, 188, 71, 118, 94, 61, 29, 33, 186, 55, 0, 0, 0, 56, 84, 46, 250, 188, 208, 0, 30, 187, 121, 233, 38, 61, 133, 139, 102, 80, 0, 0, 0, 60, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 133, 139, 102, 80, 122, 56, 0, 56, 169, 181, 87, 186, 207, 218, 175, 59, 99, 168, 27, 61, 133, 139, 102, 80, 122, 56, 0, 60, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 166, 162, 124, 87, 122, 56, 0, 56, 84, 46, 250, 188, 208, 0, 30, 187, 121, 233, 38, 61, 166, 162, 124, 87, 0, 0, 0, 60, 225, 165, 168, 188, 169, 105, 15, 189, 28, 210, 101, 61, 166, 162, 124, 87, 0, 0, 0, 56, 50, 40, 108, 188, 92, 125, 37, 189, 189, 35, 216, 61, 219, 37, 59, 149, 0, 0, 0, 60, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 219, 37, 59, 149, 122, 56, 0, 56, 34, 66, 154, 60, 204, 10, 77, 189, 93, 92, 12, 62, 219, 37, 59, 149, 0, 0, 0, 56, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 224, 253, 18, 144, 122, 56, 0, 56, 50, 40, 108, 188, 92, 125, 37, 189, 189, 35, 216, 61, 224, 253, 18, 144, 0, 0, 0, 60, 231, 26, 238, 187, 240, 20, 46, 187, 69, 97, 224, 61, 224, 253, 18, 144, 122, 56, 0, 60, 84, 46, 250, 188, 208, 0, 30, 187, 121, 233, 38, 61, 32, 36, 124, 169, 0, 0, 0, 60, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 32, 36, 124, 169, 122, 56, 0, 56, 225, 165, 168, 188, 169, 105, 15, 189, 28, 210, 101, 61, 32, 36, 124, 169, 0, 0, 0, 56, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 9, 3, 102, 176, 122, 56, 0, 56, 84, 46, 250, 188, 208, 0, 30, 187, 121, 233, 38, 61, 9, 3, 102, 176, 0, 0, 0, 60, 169, 181, 87, 186, 207, 218, 175, 59, 99, 168, 27, 61, 9, 3, 102, 176, 122, 56, 0, 60, 225, 196, 195, 60, 41, 92, 134, 60, 5, 172, 48, 61, 163, 159, 186, 201, 0, 0, 0, 60, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 163, 159, 186, 201, 122, 56, 0, 56, 126, 118, 26, 61, 199, 28, 135, 188, 71, 118, 94, 61, 163, 159, 186, 201, 0, 0, 0, 56, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 77, 147, 169, 211, 122, 56, 0, 56, 225, 196, 195, 60, 41, 92, 134, 60, 5, 172, 48, 61, 77, 147, 169, 211, 0, 0, 0, 60, 224, 38, 153, 187, 174, 177, 159, 59, 132, 85, 54, 61, 77, 147, 169, 211, 122, 56, 0, 60, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 146, 65, 209, 48, 122, 56, 0, 56, 84, 51, 213, 188, 152, 100, 68, 61, 192, 204, 180, 61, 146, 65, 209, 48, 0, 60, 0, 0, 152, 143, 183, 188, 248, 11, 160, 60, 18, 98, 152, 61, 146, 65, 209, 48, 0, 60, 0, 56, 84, 51, 213, 188, 152, 100, 68, 61, 192, 204, 180, 61, 185, 104, 168, 53, 0, 60, 0, 0, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 185, 104, 168, 53, 122, 56, 0, 56, 120, 219, 206, 187, 166, 223, 86, 61, 43, 104, 172, 61, 185, 104, 168, 53, 122, 56, 0, 0, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 130, 50, 231, 32, 122, 56, 0, 56, 158, 227, 76, 189, 152, 18, 184, 60, 71, 216, 23, 62, 130, 50, 231, 32, 0, 60, 0, 0, 25, 140, 6, 189, 222, 109, 182, 186, 48, 216, 248, 61, 130, 50, 231, 32, 0, 60, 0, 56, 158, 227, 76, 189, 152, 18, 184, 60, 71, 216, 23, 62, 179, 79, 193, 35, 0, 60, 0, 0, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 179, 79, 193, 35, 122, 56, 0, 56, 108, 194, 251, 188, 248, 62, 33, 61, 57, 24, 21, 62, 179, 79, 193, 35, 122, 56, 0, 0, 126, 118, 26, 61, 199, 28, 135, 188, 71, 118, 94, 61, 42, 7, 186, 55, 0, 0, 0, 56, 123, 6, 188, 60, 189, 130, 121, 189, 4, 245, 136, 61, 42, 7, 186, 55, 122, 56, 0, 0, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 42, 7, 186, 55, 122, 56, 0, 56, 123, 6, 188, 60, 189, 130, 121, 189, 4, 245, 136, 61, 250, 28, 169, 45, 122, 56, 0, 0, 126, 118, 26, 61, 199, 28, 135, 188, 71, 118, 94, 61, 250, 28, 169, 45, 0, 0, 0, 56, 138, 10, 83, 61, 221, 74, 74, 189, 68, 32, 134, 61, 250, 28, 169, 45, 0, 0, 0, 0, 225, 165, 168, 188, 169, 105, 15, 189, 28, 210, 101, 61, 190, 153, 124, 87, 0, 0, 0, 56, 58, 83, 156, 60, 221, 23, 117, 189, 212, 188, 140, 61, 190, 153, 124, 87, 122, 56, 0, 0, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 190, 153, 124, 87, 122, 56, 0, 56, 58, 83, 156, 60, 221, 23, 117, 189, 212, 188, 140, 61, 87, 132, 102, 80, 122, 56, 0, 0, 225, 165, 168, 188, 169, 105, 15, 189, 28, 210, 101, 61, 87, 132, 102, 80, 0, 0, 0, 56, 219, 58, 46, 188, 162, 121, 138, 189, 95, 93, 146, 61, 87, 132, 102, 80, 0, 0, 0, 0, 34, 66, 154, 60, 204, 10, 77, 189, 93, 92, 12, 62, 197, 4, 18, 144, 0, 0, 0, 56, 222, 146, 114, 61, 97, 248, 179, 188, 160, 197, 48, 62, 197, 4, 18, 144, 122, 56, 0, 0, 48, 76, 85, 61, 61, 152, 116, 189, 220, 166, 44, 62, 197, 4, 18, 144, 0, 0, 0, 0, 222, 146, 114, 61, 97, 248, 179, 188, 160, 197, 48, 62, 201, 41, 59, 149, 122, 56, 0, 0, 34, 66, 154, 60, 204, 10, 77, 189, 93, 92, 12, 62, 201, 41, 59, 149, 0, 0, 0, 56, 110, 97, 36, 61, 135, 4, 91, 188, 205, 222, 0, 62, 201, 41, 59, 149, 122, 56, 0, 56, 225, 165, 168, 188, 169, 105, 15, 189, 28, 210, 101, 61, 254, 39, 102, 176, 0, 0, 0, 56, 58, 83, 156, 60, 221, 23, 117, 189, 212, 188, 140, 61, 254, 39, 102, 176, 122, 56, 0, 0, 219, 58, 46, 188, 162, 121, 138, 189, 95, 93, 146, 61, 254, 39, 102, 176, 0, 0, 0, 0, 58, 83, 156, 60, 221, 23, 117, 189, 212, 188, 140, 61, 23, 60, 124, 169, 122, 56, 0, 0, 225, 165, 168, 188, 169, 105, 15, 189, 28, 210, 101, 61, 23, 60, 124, 169, 0, 0, 0, 56, 206, 164, 28, 60, 73, 34, 12, 189, 91, 194, 28, 61, 23, 60, 124, 169, 122, 56, 0, 56, 126, 118, 26, 61, 199, 28, 135, 188, 71, 118, 94, 61, 98, 136, 169, 211, 0, 0, 0, 56, 123, 6, 188, 60, 189, 130, 121, 189, 4, 245, 136, 61, 98, 136, 169, 211, 122, 56, 0, 0, 138, 10, 83, 61, 221, 74, 74, 189, 68, 32, 134, 61, 98, 136, 169, 211, 0, 0, 0, 0, 123, 6, 188, 60, 189, 130, 121, 189, 4, 245, 136, 61, 137, 172, 186, 201, 122, 56, 0, 0, 126, 118, 26, 61, 199, 28, 135, 188, 71, 118, 94, 61, 137, 172, 186, 201, 0, 0, 0, 56, 130, 7, 2, 60, 239, 141, 189, 188, 212, 134, 146, 61, 137, 172, 186, 201, 122, 56, 0, 56, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 47, 207, 193, 221, 122, 56, 0, 56, 158, 227, 76, 189, 152, 18, 184, 60, 71, 216, 23, 62, 47, 207, 193, 221, 0, 60, 0, 0, 108, 194, 251, 188, 248, 62, 33, 61, 57, 24, 21, 62, 47, 207, 193, 221, 122, 56, 0, 0, 158, 227, 76, 189, 152, 18, 184, 60, 71, 216, 23, 62, 76, 0, 231, 224, 0, 60, 0, 0, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 76, 0, 231, 224, 122, 56, 0, 56, 25, 140, 6, 189, 222, 109, 182, 186, 48, 216, 248, 61, 76, 0, 231, 224, 0, 60, 0, 56, 43, 19, 114, 58, 153, 236, 142, 187, 158, 37, 103, 61, 162, 104, 168, 53, 122, 56, 0, 60, 152, 143, 183, 188, 248, 11, 160, 60, 18, 98, 152, 61, 162, 104, 168, 53, 0, 60, 0, 56, 221, 235, 153, 188, 131, 98, 17, 188, 198, 238, 119, 61, 162, 104, 168, 53, 0, 60, 0, 60, 152, 143, 183, 188, 248, 11, 160, 60, 18, 98, 152, 61, 139, 186, 209, 48, 0, 60, 0, 56, 43, 19, 114, 58, 153, 236, 142, 187, 158, 37, 103, 61, 139, 186, 209, 48, 122, 56, 0, 60, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 139, 186, 209, 48, 122, 56, 0, 56, 102, 221, 108, 59, 251, 233, 8, 188, 184, 127, 188, 61, 164, 89, 193, 35, 122, 56, 0, 60, 25, 140, 6, 189, 222, 109, 182, 186, 48, 216, 248, 61, 164, 89, 193, 35, 0, 60, 0, 56, 38, 105, 128, 188, 84, 224, 206, 188, 211, 255, 193, 61, 164, 89, 193, 35, 0, 60, 0, 60, 25, 140, 6, 189, 222, 109, 182, 186, 48, 216, 248, 61, 146, 181, 231, 32, 0, 60, 0, 56, 102, 221, 108, 59, 251, 233, 8, 188, 184, 127, 188, 61, 146, 181, 231, 32, 122, 56, 0, 60, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 146, 181, 231, 32, 122, 56, 0, 56, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 2, 206, 63, 9, 122, 56, 0, 56, 89, 136, 107, 61, 189, 151, 41, 188, 154, 176, 135, 61, 2, 206, 63, 9, 0, 60, 0, 0, 128, 22, 224, 60, 180, 63, 142, 188, 39, 102, 128, 61, 2, 206, 63, 9, 0, 60, 0, 56, 89, 136, 107, 61, 189, 151, 41, 188, 154, 176, 135, 61, 27, 7, 23, 12, 0, 60, 0, 0, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 27, 7, 23, 12, 122, 56, 0, 56, 107, 230, 88, 61, 41, 220, 24, 60, 160, 46, 135, 61, 27, 7, 23, 12, 122, 56, 0, 0, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 22, 201, 168, 203, 122, 56, 0, 56, 84, 51, 213, 188, 152, 100, 68, 61, 192, 204, 180, 61, 22, 201, 168, 203, 0, 60, 0, 0, 120, 219, 206, 187, 166, 223, 86, 61, 43, 104, 172, 61, 22, 201, 168, 203, 122, 56, 0, 0, 84, 51, 213, 188, 152, 100, 68, 61, 192, 204, 180, 61, 61, 240, 209, 208, 0, 60, 0, 0, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 61, 240, 209, 208, 122, 56, 0, 56, 152, 143, 183, 188, 248, 11, 160, 60, 18, 98, 152, 61, 61, 240, 209, 208, 0, 60, 0, 56, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 137, 157, 23, 244, 122, 56, 0, 56, 89, 136, 107, 61, 189, 151, 41, 188, 154, 176, 135, 61, 137, 157, 23, 244, 0, 60, 0, 0, 107, 230, 88, 61, 41, 220, 24, 60, 160, 46, 135, 61, 137, 157, 23, 244, 122, 56, 0, 0, 89, 136, 107, 61, 189, 151, 41, 188, 154, 176, 135, 61, 180, 124, 63, 247, 0, 60, 0, 0, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 180, 124, 63, 247, 122, 56, 0, 56, 128, 22, 224, 60, 180, 63, 142, 188, 39, 102, 128, 61, 180, 124, 63, 247, 0, 60, 0, 56, 102, 221, 108, 59, 251, 233, 8, 188, 184, 127, 188, 61, 51, 16, 231, 224, 122, 56, 0, 60, 25, 140, 6, 189, 222, 109, 182, 186, 48, 216, 248, 61, 51, 16, 231, 224, 0, 60, 0, 56, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 51, 16, 231, 224, 122, 56, 0, 56, 25, 140, 6, 189, 222, 109, 182, 186, 48, 216, 248, 61, 37, 222, 193, 221, 0, 60, 0, 56, 102, 221, 108, 59, 251, 233, 8, 188, 184, 127, 188, 61, 37, 222, 193, 221, 122, 56, 0, 60, 38, 105, 128, 188, 84, 224, 206, 188, 211, 255, 193, 61, 37, 222, 193, 221, 0, 60, 0, 60, 126, 4, 213, 60, 15, 178, 180, 58, 130, 202, 81, 61, 130, 151, 168, 53, 0, 0, 0, 60, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 130, 151, 168, 53, 122, 56, 0, 56, 43, 19, 114, 58, 153, 236, 142, 187, 158, 37, 103, 61, 130, 151, 168, 53, 122, 56, 0, 60, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 89, 109, 130, 50, 122, 56, 0, 56, 126, 4, 213, 60, 15, 178, 180, 58, 130, 202, 81, 61, 89, 109, 130, 50, 0, 0, 0, 60, 196, 96, 183, 60, 91, 8, 244, 60, 240, 79, 133, 61, 89, 109, 130, 50, 0, 0, 0, 56, 68, 166, 230, 60, 20, 76, 87, 60, 60, 128, 181, 61, 145, 101, 193, 35, 0, 0, 0, 60, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 145, 101, 193, 35, 122, 56, 0, 56, 102, 221, 108, 59, 251, 233, 8, 188, 184, 127, 188, 61, 145, 101, 193, 35, 122, 56, 0, 60, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 190, 119, 160, 37, 122, 56, 0, 56, 68, 166, 230, 60, 20, 76, 87, 60, 60, 128, 181, 61, 190, 119, 160, 37, 0, 0, 0, 60, 111, 238, 51, 60, 193, 143, 23, 61, 153, 88, 236, 61, 190, 119, 160, 37, 0, 0, 0, 56, 52, 158, 240, 187, 87, 230, 153, 187, 117, 51, 113, 61, 244, 255, 23, 12, 122, 56, 0, 60, 128, 22, 224, 60, 180, 63, 142, 188, 39, 102, 128, 61, 244, 255, 23, 12, 0, 60, 0, 56, 142, 29, 55, 187, 137, 179, 199, 188, 105, 55, 114, 61, 244, 255, 23, 12, 0, 60, 0, 60, 128, 22, 224, 60, 180, 63, 142, 188, 39, 102, 128, 61, 233, 210, 63, 9, 0, 60, 0, 56, 52, 158, 240, 187, 87, 230, 153, 187, 117, 51, 113, 61, 233, 210, 63, 9, 122, 56, 0, 60, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 233, 210, 63, 9, 122, 56, 0, 56, 43, 19, 114, 58, 153, 236, 142, 187, 158, 37, 103, 61, 56, 9, 209, 208, 122, 56, 0, 60, 152, 143, 183, 188, 248, 11, 160, 60, 18, 98, 152, 61, 56, 9, 209, 208, 0, 60, 0, 56, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 56, 9, 209, 208, 122, 56, 0, 56, 152, 143, 183, 188, 248, 11, 160, 60, 18, 98, 152, 61, 22, 224, 168, 203, 0, 60, 0, 56, 43, 19, 114, 58, 153, 236, 142, 187, 158, 37, 103, 61, 22, 224, 168, 203, 122, 56, 0, 60, 221, 235, 153, 188, 131, 98, 17, 188, 198, 238, 119, 61, 22, 224, 168, 203, 0, 60, 0, 60, 52, 158, 240, 187, 87, 230, 153, 187, 117, 51, 113, 61, 80, 103, 63, 247, 122, 56, 0, 60, 128, 22, 224, 60, 180, 63, 142, 188, 39, 102, 128, 61, 80, 103, 63, 247, 0, 60, 0, 56, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 80, 103, 63, 247, 122, 56, 0, 56, 128, 22, 224, 60, 180, 63, 142, 188, 39, 102, 128, 61, 125, 114, 23, 244, 0, 60, 0, 56, 52, 158, 240, 187, 87, 230, 153, 187, 117, 51, 113, 61, 125, 114, 23, 244, 122, 56, 0, 60, 142, 29, 55, 187, 137, 179, 199, 188, 105, 55, 114, 61, 125, 114, 23, 244, 0, 60, 0, 60, 68, 166, 230, 60, 20, 76, 87, 60, 60, 128, 181, 61, 7, 196, 160, 219, 0, 0, 0, 60, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 7, 196, 160, 219, 122, 56, 0, 56, 111, 238, 51, 60, 193, 143, 23, 61, 153, 88, 236, 61, 7, 196, 160, 219, 0, 0, 0, 56, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 25, 241, 193, 221, 122, 56, 0, 56, 68, 166, 230, 60, 20, 76, 87, 60, 60, 128, 181, 61, 25, 241, 193, 221, 0, 0, 0, 60, 102, 221, 108, 59, 251, 233, 8, 188, 184, 127, 188, 61, 25, 241, 193, 221, 122, 56, 0, 60, 196, 96, 183, 60, 91, 8, 244, 60, 240, 79, 133, 61, 65, 114, 130, 50, 0, 0, 0, 56, 120, 219, 206, 187, 166, 223, 86, 61, 43, 104, 172, 61, 65, 114, 130, 50, 122, 56, 0, 0, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 65, 114, 130, 50, 122, 56, 0, 56, 120, 219, 206, 187, 166, 223, 86, 61, 43, 104, 172, 61, 162, 104, 168, 53, 122, 56, 0, 0, 196, 96, 183, 60, 91, 8, 244, 60, 240, 79, 133, 61, 162, 104, 168, 53, 0, 0, 0, 56, 7, 189, 153, 60, 201, 98, 110, 61, 158, 186, 161, 61, 162, 104, 168, 53, 0, 0, 0, 0, 111, 238, 51, 60, 193, 143, 23, 61, 153, 88, 236, 61, 203, 107, 160, 37, 0, 0, 0, 56, 108, 194, 251, 188, 248, 62, 33, 61, 57, 24, 21, 62, 203, 107, 160, 37, 122, 56, 0, 0, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 203, 107, 160, 37, 122, 56, 0, 56, 108, 194, 251, 188, 248, 62, 33, 61, 57, 24, 21, 62, 164, 89, 193, 35, 122, 56, 0, 0, 111, 238, 51, 60, 193, 143, 23, 61, 153, 88, 236, 61, 164, 89, 193, 35, 0, 0, 0, 56, 85, 223, 202, 187, 124, 76, 121, 61, 124, 152, 17, 62, 164, 89, 193, 35, 0, 0, 0, 0, 128, 33, 87, 188, 176, 165, 166, 60, 188, 232, 111, 61, 213, 247, 23, 12, 0, 0, 0, 60, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 213, 247, 23, 12, 122, 56, 0, 56, 52, 158, 240, 187, 87, 230, 153, 187, 117, 51, 113, 61, 213, 247, 23, 12, 122, 56, 0, 60, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 239, 37, 12, 26, 122, 56, 0, 56, 128, 33, 87, 188, 176, 165, 166, 60, 188, 232, 111, 61, 239, 37, 12, 26, 0, 0, 0, 60, 114, 105, 139, 60, 134, 25, 224, 60, 162, 125, 126, 61, 239, 37, 12, 26, 0, 0, 0, 56, 126, 4, 213, 60, 15, 178, 180, 58, 130, 202, 81, 61, 239, 219, 130, 206, 0, 0, 0, 60, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 239, 219, 130, 206, 122, 56, 0, 56, 196, 96, 183, 60, 91, 8, 244, 60, 240, 79, 133, 61, 239, 219, 130, 206, 0, 0, 0, 56, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 21, 0, 168, 203, 122, 56, 0, 56, 126, 4, 213, 60, 15, 178, 180, 58, 130, 202, 81, 61, 21, 0, 168, 203, 0, 0, 0, 60, 43, 19, 114, 58, 153, 236, 142, 187, 158, 37, 103, 61, 21, 0, 168, 203, 122, 56, 0, 60, 128, 33, 87, 188, 176, 165, 166, 60, 188, 232, 111, 61, 89, 147, 12, 230, 0, 0, 0, 60, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 89, 147, 12, 230, 122, 56, 0, 56, 114, 105, 139, 60, 134, 25, 224, 60, 162, 125, 126, 61, 89, 147, 12, 230, 0, 0, 0, 56, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 117, 83, 23, 244, 122, 56, 0, 56, 128, 33, 87, 188, 176, 165, 166, 60, 188, 232, 111, 61, 117, 83, 23, 244, 0, 0, 0, 60, 52, 158, 240, 187, 87, 230, 153, 187, 117, 51, 113, 61, 117, 83, 23, 244, 122, 56, 0, 60, 111, 238, 51, 60, 193, 143, 23, 61, 153, 88, 236, 61, 37, 222, 193, 221, 0, 0, 0, 56, 108, 194, 251, 188, 248, 62, 33, 61, 57, 24, 21, 62, 37, 222, 193, 221, 122, 56, 0, 0, 85, 223, 202, 187, 124, 76, 121, 61, 124, 152, 17, 62, 37, 222, 193, 221, 0, 0, 0, 0, 108, 194, 251, 188, 248, 62, 33, 61, 57, 24, 21, 62, 19, 183, 160, 219, 122, 56, 0, 0, 111, 238, 51, 60, 193, 143, 23, 61, 153, 88, 236, 61, 19, 183, 160, 219, 0, 0, 0, 56, 196, 20, 184, 188, 161, 128, 193, 60, 116, 212, 216, 61, 19, 183, 160, 219, 122, 56, 0, 56, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 78, 156, 58, 53, 122, 56, 0, 56, 39, 119, 187, 188, 192, 60, 152, 189, 84, 104, 199, 61, 78, 156, 58, 53, 0, 60, 0, 0, 158, 218, 190, 58, 248, 254, 49, 189, 130, 79, 165, 61, 78, 156, 58, 53, 0, 60, 0, 56, 39, 119, 187, 188, 192, 60, 152, 189, 84, 104, 199, 61, 179, 156, 68, 39, 0, 60, 0, 0, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 179, 156, 68, 39, 122, 56, 0, 56, 64, 174, 57, 189, 178, 167, 111, 189, 51, 78, 192, 61, 179, 156, 68, 39, 122, 56, 0, 0, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 80, 170, 64, 74, 122, 56, 0, 56, 243, 58, 78, 60, 52, 64, 98, 189, 246, 45, 17, 62, 80, 170, 64, 74, 0, 60, 0, 0, 97, 202, 150, 60, 101, 217, 230, 188, 106, 186, 238, 61, 80, 170, 64, 74, 0, 60, 0, 56, 243, 58, 78, 60, 52, 64, 98, 189, 246, 45, 17, 62, 214, 136, 103, 57, 0, 60, 0, 0, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 214, 136, 103, 57, 122, 56, 0, 56, 196, 157, 58, 188, 144, 198, 86, 189, 43, 151, 14, 62, 214, 136, 103, 57, 122, 56, 0, 0, 114, 105, 139, 60, 134, 25, 224, 60, 162, 125, 126, 61, 13, 42, 12, 26, 0, 0, 0, 56, 107, 230, 88, 61, 41, 220, 24, 60, 160, 46, 135, 61, 13, 42, 12, 26, 122, 56, 0, 0, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 13, 42, 12, 26, 122, 56, 0, 56, 107, 230, 88, 61, 41, 220, 24, 60, 160, 46, 135, 61, 244, 255, 23, 12, 122, 56, 0, 0, 114, 105, 139, 60, 134, 25, 224, 60, 162, 125, 126, 61, 244, 255, 23, 12, 0, 0, 0, 56, 210, 49, 65, 61, 174, 198, 12, 61, 68, 137, 134, 61, 244, 255, 23, 12, 0, 0, 0, 0, 196, 96, 183, 60, 91, 8, 244, 60, 240, 79, 133, 61, 22, 224, 168, 203, 0, 0, 0, 56, 120, 219, 206, 187, 166, 223, 86, 61, 43, 104, 172, 61, 22, 224, 168, 203, 122, 56, 0, 0, 7, 189, 153, 60, 201, 98, 110, 61, 158, 186, 161, 61, 22, 224, 168, 203, 0, 0, 0, 0, 120, 219, 206, 187, 166, 223, 86, 61, 43, 104, 172, 61, 244, 195, 130, 206, 122, 56, 0, 0, 196, 96, 183, 60, 91, 8, 244, 60, 240, 79, 133, 61, 244, 195, 130, 206, 0, 0, 0, 56, 89, 196, 214, 187, 103, 177, 242, 60, 74, 22, 109, 61, 244, 195, 130, 206, 122, 56, 0, 56, 114, 105, 139, 60, 134, 25, 224, 60, 162, 125, 126, 61, 125, 114, 23, 244, 0, 0, 0, 56, 107, 230, 88, 61, 41, 220, 24, 60, 160, 46, 135, 61, 125, 114, 23, 244, 122, 56, 0, 0, 210, 49, 65, 61, 174, 198, 12, 61, 68, 137, 134, 61, 125, 114, 23, 244, 0, 0, 0, 0, 107, 230, 88, 61, 41, 220, 24, 60, 160, 46, 135, 61, 172, 143, 12, 230, 122, 56, 0, 0, 114, 105, 139, 60, 134, 25, 224, 60, 162, 125, 126, 61, 172, 143, 12, 230, 0, 0, 0, 56, 19, 223, 173, 60, 174, 60, 11, 59, 51, 22, 156, 61, 172, 143, 12, 230, 122, 56, 0, 56, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 6, 84, 103, 199, 122, 56, 0, 56, 243, 58, 78, 60, 52, 64, 98, 189, 246, 45, 17, 62, 6, 84, 103, 199, 0, 60, 0, 0, 196, 157, 58, 188, 144, 198, 86, 189, 43, 151, 14, 62, 6, 84, 103, 199, 122, 56, 0, 0, 243, 58, 78, 60, 52, 64, 98, 189, 246, 45, 17, 62, 216, 46, 64, 182, 0, 60, 0, 0, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 216, 46, 64, 182, 122, 56, 0, 56, 97, 202, 150, 60, 101, 217, 230, 188, 106, 186, 238, 61, 216, 46, 64, 182, 0, 60, 0, 56, 43, 105, 91, 59, 243, 213, 84, 59, 37, 57, 120, 61, 164, 141, 68, 39, 122, 56, 0, 60, 158, 218, 190, 58, 248, 254, 49, 189, 130, 79, 165, 61, 164, 141, 68, 39, 0, 60, 0, 56, 124, 82, 211, 60, 193, 17, 78, 188, 178, 54, 131, 61, 164, 141, 68, 39, 0, 60, 0, 60, 158, 218, 190, 58, 248, 254, 49, 189, 130, 79, 165, 61, 99, 170, 58, 53, 0, 60, 0, 56, 43, 105, 91, 59, 243, 213, 84, 59, 37, 57, 120, 61, 99, 170, 58, 53, 122, 56, 0, 60, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 99, 170, 58, 53, 122, 56, 0, 56, 87, 187, 130, 57, 117, 14, 220, 58, 84, 235, 181, 61, 191, 130, 103, 57, 122, 56, 0, 60, 97, 202, 150, 60, 101, 217, 230, 188, 106, 186, 238, 61, 191, 130, 103, 57, 0, 60, 0, 56, 73, 119, 198, 60, 15, 38, 147, 186, 233, 24, 187, 61, 191, 130, 103, 57, 0, 60, 0, 60, 97, 202, 150, 60, 101, 217, 230, 188, 106, 186, 238, 61, 100, 174, 64, 74, 0, 60, 0, 56, 87, 187, 130, 57, 117, 14, 220, 58, 84, 235, 181, 61, 100, 174, 64, 74, 122, 56, 0, 60, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 100, 174, 64, 74, 122, 56, 0, 56, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 173, 155, 253, 28, 122, 56, 0, 56, 171, 231, 116, 189, 154, 195, 5, 188, 102, 151, 106, 61, 173, 155, 253, 28, 0, 60, 0, 0, 201, 144, 244, 188, 160, 67, 128, 188, 221, 193, 74, 61, 173, 155, 253, 28, 0, 60, 0, 56, 171, 231, 116, 189, 154, 195, 5, 188, 102, 151, 106, 61, 136, 73, 235, 15, 0, 60, 0, 0, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 136, 73, 235, 15, 122, 56, 0, 56, 69, 71, 98, 189, 7, 166, 66, 60, 39, 47, 99, 61, 136, 73, 235, 15, 122, 56, 0, 0, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 26, 49, 68, 217, 122, 56, 0, 56, 39, 119, 187, 188, 192, 60, 152, 189, 84, 104, 199, 61, 26, 49, 68, 217, 0, 60, 0, 0, 64, 174, 57, 189, 178, 167, 111, 189, 51, 78, 192, 61, 26, 49, 68, 217, 122, 56, 0, 0, 39, 119, 187, 188, 192, 60, 152, 189, 84, 104, 199, 61, 230, 48, 58, 203, 0, 60, 0, 0, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 230, 48, 58, 203, 122, 56, 0, 56, 158, 218, 190, 58, 248, 254, 49, 189, 130, 79, 165, 61, 230, 48, 58, 203, 0, 60, 0, 56, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 53, 250, 235, 241, 122, 56, 0, 56, 171, 231, 116, 189, 154, 195, 5, 188, 102, 151, 106, 61, 53, 250, 235, 241, 0, 60, 0, 0, 69, 71, 98, 189, 7, 166, 66, 60, 39, 47, 99, 61, 53, 250, 235, 241, 122, 56, 0, 0, 171, 231, 116, 189, 154, 195, 5, 188, 102, 151, 106, 61, 25, 43, 253, 228, 0, 60, 0, 0, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 25, 43, 253, 228, 122, 56, 0, 56, 201, 144, 244, 188, 160, 67, 128, 188, 221, 193, 74, 61, 25, 43, 253, 228, 0, 60, 0, 56, 87, 187, 130, 57, 117, 14, 220, 58, 84, 235, 181, 61, 212, 26, 64, 182, 122, 56, 0, 60, 97, 202, 150, 60, 101, 217, 230, 188, 106, 186, 238, 61, 212, 26, 64, 182, 0, 60, 0, 56, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 212, 26, 64, 182, 122, 56, 0, 56, 97, 202, 150, 60, 101, 217, 230, 188, 106, 186, 238, 61, 0, 61, 103, 199, 0, 60, 0, 56, 87, 187, 130, 57, 117, 14, 220, 58, 84, 235, 181, 61, 0, 61, 103, 199, 122, 56, 0, 60, 73, 119, 198, 60, 15, 38, 147, 186, 233, 24, 187, 61, 0, 61, 103, 199, 0, 60, 0, 60, 142, 137, 206, 188, 23, 138, 191, 60, 225, 38, 102, 61, 120, 142, 68, 39, 0, 0, 0, 60, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 120, 142, 68, 39, 122, 56, 0, 56, 43, 105, 91, 59, 243, 213, 84, 59, 37, 57, 120, 61, 120, 142, 68, 39, 122, 56, 0, 60, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 136, 174, 74, 24, 122, 56, 0, 56, 142, 137, 206, 188, 23, 138, 191, 60, 225, 38, 102, 61, 136, 174, 74, 24, 0, 0, 0, 60, 48, 247, 74, 189, 231, 171, 245, 187, 65, 44, 149, 61, 136, 174, 74, 24, 0, 0, 0, 56, 242, 219, 247, 188, 52, 207, 171, 59, 215, 84, 175, 61, 95, 135, 103, 57, 0, 0, 0, 60, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 95, 135, 103, 57, 122, 56, 0, 56, 87, 187, 130, 57, 117, 14, 220, 58, 84, 235, 181, 61, 95, 135, 103, 57, 122, 56, 0, 60, 230, 220, 183, 187, 68, 109, 22, 189, 1, 151, 208, 61, 170, 164, 92, 35, 122, 56, 0, 56, 242, 219, 247, 188, 52, 207, 171, 59, 215, 84, 175, 61, 170, 164, 92, 35, 0, 0, 0, 60, 109, 196, 19, 189, 53, 179, 178, 188, 88, 246, 226, 61, 170, 164, 92, 35, 0, 0, 0, 56, 64, 186, 151, 59, 252, 132, 75, 187, 23, 132, 35, 61, 132, 156, 235, 15, 122, 56, 0, 60, 201, 144, 244, 188, 160, 67, 128, 188, 221, 193, 74, 61, 132, 156, 235, 15, 0, 60, 0, 56, 5, 194, 173, 56, 112, 165, 189, 188, 86, 236, 42, 61, 132, 156, 235, 15, 0, 60, 0, 60, 201, 144, 244, 188, 160, 67, 128, 188, 221, 193, 74, 61, 71, 130, 253, 28, 0, 60, 0, 56, 64, 186, 151, 59, 252, 132, 75, 187, 23, 132, 35, 61, 71, 130, 253, 28, 122, 56, 0, 60, 160, 55, 237, 188, 243, 125, 130, 59, 203, 90, 11, 61, 71, 130, 253, 28, 122, 56, 0, 56, 43, 105, 91, 59, 243, 213, 84, 59, 37, 57, 120, 61, 216, 27, 58, 203, 122, 56, 0, 60, 158, 218, 190, 58, 248, 254, 49, 189, 130, 79, 165, 61, 216, 27, 58, 203, 0, 60, 0, 56, 94, 141, 192, 188, 249, 83, 15, 189, 180, 114, 117, 61, 216, 27, 58, 203, 122, 56, 0, 56, 158, 218, 190, 58, 248, 254, 49, 189, 130, 79, 165, 61, 11, 34, 68, 217, 0, 60, 0, 56, 43, 105, 91, 59, 243, 213, 84, 59, 37, 57, 120, 61, 11, 34, 68, 217, 122, 56, 0, 60, 124, 82, 211, 60, 193, 17, 78, 188, 178, 54, 131, 61, 11, 34, 68, 217, 0, 60, 0, 60 ),
+"array_index_data": PoolByteArray( 0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, 9, 0, 10, 0, 11, 0, 12, 0, 13, 0, 14, 0, 15, 0, 16, 0, 17, 0, 18, 0, 19, 0, 20, 0, 21, 0, 22, 0, 23, 0, 24, 0, 25, 0, 26, 0, 27, 0, 28, 0, 29, 0, 30, 0, 31, 0, 32, 0, 33, 0, 34, 0, 35, 0, 36, 0, 37, 0, 38, 0, 39, 0, 40, 0, 41, 0, 42, 0, 43, 0, 44, 0, 45, 0, 46, 0, 47, 0, 48, 0, 49, 0, 50, 0, 51, 0, 52, 0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 58, 0, 59, 0, 60, 0, 61, 0, 62, 0, 63, 0, 64, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 91, 0, 92, 0, 93, 0, 94, 0, 95, 0, 96, 0, 97, 0, 98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0, 123, 0, 124, 0, 125, 0, 126, 0, 127, 0, 128, 0, 129, 0, 130, 0, 131, 0, 132, 0, 133, 0, 134, 0, 135, 0, 136, 0, 137, 0, 138, 0, 139, 0, 140, 0, 141, 0, 142, 0, 143, 0, 144, 0, 145, 0, 146, 0, 147, 0, 148, 0, 149, 0, 150, 0, 151, 0, 152, 0, 153, 0, 154, 0, 155, 0, 156, 0, 157, 0, 158, 0, 159, 0, 160, 0, 161, 0, 162, 0, 163, 0, 164, 0, 163, 0, 162, 0, 165, 0, 166, 0, 167, 0, 168, 0, 169, 0, 170, 0, 171, 0, 172, 0, 173, 0, 174, 0, 175, 0, 176, 0, 177, 0, 178, 0, 179, 0, 180, 0, 181, 0, 182, 0, 183, 0, 184, 0, 185, 0, 186, 0, 185, 0, 184, 0, 187, 0, 188, 0, 189, 0, 190, 0, 191, 0, 192, 0, 193, 0, 194, 0, 195, 0, 196, 0, 197, 0, 198, 0, 199, 0, 200, 0, 201, 0, 202, 0, 203, 0, 204, 0, 205, 0, 206, 0, 207, 0, 208, 0, 209, 0, 210, 0, 211, 0, 212, 0, 213, 0, 214, 0, 215, 0, 216, 0, 217, 0, 218, 0, 219, 0, 220, 0, 221, 0, 222, 0, 223, 0, 224, 0, 225, 0, 226, 0, 227, 0, 228, 0, 229, 0, 230, 0, 231, 0, 232, 0, 233, 0, 234, 0, 235, 0, 236, 0, 237, 0, 238, 0, 239, 0, 240, 0, 241, 0, 242, 0, 243, 0, 244, 0, 245, 0, 246, 0, 247, 0, 248, 0, 249, 0, 250, 0, 251, 0, 252, 0, 253, 0, 254, 0, 255, 0, 0, 1, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12, 1, 13, 1, 14, 1, 15, 1, 16, 1, 17, 1, 18, 1, 19, 1, 20, 1, 21, 1, 22, 1, 23, 1, 24, 1, 25, 1, 26, 1, 27, 1, 28, 1, 29, 1, 30, 1, 31, 1, 32, 1, 33, 1, 34, 1, 35, 1, 36, 1, 37, 1, 38, 1, 39, 1, 40, 1, 41, 1, 42, 1, 43, 1, 44, 1, 45, 1, 46, 1, 47, 1, 48, 1, 49, 1, 50, 1, 51, 1, 52, 1, 53, 1, 54, 1, 55, 1, 56, 1, 57, 1, 58, 1, 59, 1, 60, 1, 61, 1, 62, 1, 63, 1, 64, 1, 65, 1, 66, 1, 67, 1, 68, 1, 69, 1, 70, 1, 71, 1, 72, 1, 73, 1, 74, 1, 75, 1, 76, 1, 77, 1, 78, 1, 79, 1, 80, 1, 81, 1, 82, 1, 83, 1, 84, 1, 85, 1, 86, 1, 87, 1, 88, 1, 89, 1, 90, 1, 91, 1, 92, 1, 93, 1, 94, 1, 95, 1, 96, 1, 97, 1, 98, 1, 99, 1, 100, 1, 101, 1, 102, 1, 103, 1, 104, 1, 105, 1, 106, 1, 107, 1, 108, 1, 109, 1, 110, 1, 111, 1, 112, 1, 113, 1, 114, 1, 115, 1, 116, 1, 117, 1, 118, 1, 119, 1, 120, 1, 121, 1, 122, 1, 123, 1, 124, 1, 125, 1, 126, 1, 127, 1, 128, 1, 129, 1, 130, 1, 131, 1, 132, 1, 133, 1, 134, 1, 135, 1, 136, 1, 137, 1, 138, 1, 139, 1, 140, 1, 141, 1, 142, 1, 143, 1, 144, 1, 145, 1, 146, 1, 147, 1, 148, 1, 149, 1, 150, 1, 151, 1, 152, 1, 153, 1, 154, 1, 155, 1, 156, 1, 157, 1, 158, 1, 159, 1, 160, 1, 161, 1, 162, 1, 163, 1, 164, 1, 165, 1, 166, 1, 167, 1, 168, 1, 169, 1, 170, 1, 171, 1, 172, 1, 173, 1, 174, 1, 175, 1, 176, 1, 177, 1, 178, 1, 179, 1, 180, 1, 181, 1, 182, 1, 183, 1, 184, 1, 185, 1, 186, 1, 187, 1, 188, 1, 189, 1, 190, 1, 191, 1, 192, 1, 193, 1, 194, 1, 195, 1, 196, 1, 197, 1, 198, 1, 199, 1, 200, 1, 201, 1, 202, 1, 203, 1, 204, 1, 205, 1, 206, 1, 207, 1, 208, 1, 209, 1, 210, 1, 211, 1, 212, 1, 213, 1, 214, 1, 215, 1, 216, 1, 217, 1, 218, 1, 219, 1, 220, 1, 221, 1, 222, 1, 223, 1, 224, 1, 225, 1, 226, 1, 227, 1, 228, 1, 229, 1, 230, 1, 231, 1, 232, 1, 233, 1, 234, 1, 235, 1, 236, 1, 237, 1, 238, 1, 239, 1, 240, 1, 241, 1, 242, 1, 243, 1, 244, 1, 245, 1, 246, 1, 247, 1, 248, 1, 249, 1, 250, 1, 251, 1, 252, 1, 253, 1, 254, 1, 255, 1, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 2, 6, 2, 7, 2, 8, 2, 9, 2, 10, 2, 11, 2, 12, 2, 13, 2, 14, 2, 15, 2, 16, 2, 17, 2, 18, 2, 19, 2, 20, 2, 21, 2, 22, 2, 23, 2, 24, 2, 25, 2, 26, 2, 27, 2, 28, 2, 29, 2, 30, 2, 31, 2, 32, 2, 33, 2, 34, 2, 35, 2, 36, 2, 37, 2, 38, 2, 39, 2, 40, 2, 41, 2, 42, 2, 43, 2, 44, 2, 45, 2, 46, 2, 47, 2, 48, 2, 49, 2, 50, 2, 51, 2, 52, 2, 53, 2, 54, 2, 55, 2, 56, 2, 57, 2, 58, 2, 59, 2, 60, 2, 61, 2, 62, 2, 63, 2, 64, 2, 65, 2, 66, 2, 67, 2, 68, 2, 69, 2, 70, 2, 71, 2 ),
+"blend_shape_data": [  ],
+"format": 2194711,
+"index_count": 588,
+"material": ExtResource( 11 ),
+"name": "Branch_6",
+"primitive": 4,
+"skeleton_aabb": [  ],
+"vertex_count": 584
+}
+
+[sub_resource type="SpatialMaterial" id=41]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.0745098, 0.0784314, 0.172549, 1 )
+
+[sub_resource type="QuadMesh" id=7]
+material = SubResource( 41 )
+size = Vector2( 250, 300 )
+
+[sub_resource type="QuadMesh" id=20]
+size = Vector2( 1.5, 5 )
+
+[sub_resource type="SpatialMaterial" id=21]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 1, 0.690196, 0, 1 )
+
+[sub_resource type="OpenSimplexNoise" id=22]
+octaves = 6
+period = 20.0
+persistence = 0.565
+lacunarity = 1.54
+
+[sub_resource type="NoiseTexture" id=23]
+width = 256
+height = 256
+seamless = true
+noise = SubResource( 22 )
+
+[sub_resource type="SpatialMaterial" id=24]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.52549, 0.52549, 0.52549, 1 )
+albedo_texture = SubResource( 23 )
+distance_fade_mode = 3
+distance_fade_min_distance = 100.0
+distance_fade_max_distance = 95.0
+
+[sub_resource type="CubeMesh" id=25]
+material = SubResource( 24 )
+size = Vector3( 0.4, 1, 1 )
+
+[sub_resource type="ConcavePolygonShape" id=27]
+data = PoolVector3Array( -0.2, 0.5, 0.5, 0.2, 0.5, 0.5, -0.2, -0.5, 0.5, 0.2, 0.5, 0.5, 0.2, -0.5, 0.5, -0.2, -0.5, 0.5, 0.2, 0.5, -0.5, -0.2, 0.5, -0.5, 0.2, -0.5, -0.5, -0.2, 0.5, -0.5, -0.2, -0.5, -0.5, 0.2, -0.5, -0.5, 0.2, 0.5, 0.5, 0.2, 0.5, -0.5, 0.2, -0.5, 0.5, 0.2, 0.5, -0.5, 0.2, -0.5, -0.5, 0.2, -0.5, 0.5, -0.2, 0.5, -0.5, -0.2, 0.5, 0.5, -0.2, -0.5, -0.5, -0.2, 0.5, 0.5, -0.2, -0.5, 0.5, -0.2, -0.5, -0.5, 0.2, 0.5, 0.5, -0.2, 0.5, 0.5, 0.2, 0.5, -0.5, -0.2, 0.5, 0.5, -0.2, 0.5, -0.5, 0.2, 0.5, -0.5, -0.2, -0.5, 0.5, 0.2, -0.5, 0.5, -0.2, -0.5, -0.5, 0.2, -0.5, 0.5, 0.2, -0.5, -0.5, -0.2, -0.5, -0.5 )
+
+[sub_resource type="ConcavePolygonShape" id=26]
+data = PoolVector3Array( -0.2, 0.5, 0.5, 0.2, 0.5, 0.5, -0.2, -0.5, 0.5, 0.2, 0.5, 0.5, 0.2, -0.5, 0.5, -0.2, -0.5, 0.5, 0.2, 0.5, -0.5, -0.2, 0.5, -0.5, 0.2, -0.5, -0.5, -0.2, 0.5, -0.5, -0.2, -0.5, -0.5, 0.2, -0.5, -0.5, 0.2, 0.5, 0.5, 0.2, 0.5, -0.5, 0.2, -0.5, 0.5, 0.2, 0.5, -0.5, 0.2, -0.5, -0.5, 0.2, -0.5, 0.5, -0.2, 0.5, -0.5, -0.2, 0.5, 0.5, -0.2, -0.5, -0.5, -0.2, 0.5, 0.5, -0.2, -0.5, 0.5, -0.2, -0.5, -0.5, 0.2, 0.5, 0.5, -0.2, 0.5, 0.5, 0.2, 0.5, -0.5, -0.2, 0.5, 0.5, -0.2, 0.5, -0.5, 0.2, 0.5, -0.5, -0.2, -0.5, 0.5, 0.2, -0.5, 0.5, -0.2, -0.5, -0.5, 0.2, -0.5, 0.5, 0.2, -0.5, -0.5, -0.2, -0.5, -0.5 )
+
+[sub_resource type="SpatialMaterial" id=30]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.623529, 0.301961, 0, 1 )
+distance_fade_mode = 3
+distance_fade_min_distance = 100.0
+distance_fade_max_distance = 95.0
+
+[sub_resource type="CubeMesh" id=28]
+material = SubResource( 30 )
+size = Vector3( 15, 2, 4 )
+
+[sub_resource type="PrismMesh" id=29]
+material = SubResource( 30 )
+left_to_right = 0.0
+size = Vector3( 2, 2, 4 )
+
+[sub_resource type="CubeMesh" id=31]
+material = SubResource( 30 )
+size = Vector3( 4, 1, 2 )
+
+[sub_resource type="ConcavePolygonShape" id=36]
+data = PoolVector3Array( -12.5, 5, 10, 12.5, 5, 10, -12.5, -5, 10, 12.5, 5, 10, 12.5, -5, 10, -12.5, -5, 10, 12.5, 5, -10, -12.5, 5, -10, 12.5, -5, -10, -12.5, 5, -10, -12.5, -5, -10, 12.5, -5, -10, 12.5, 5, 10, 12.5, 5, -10, 12.5, -5, 10, 12.5, 5, -10, 12.5, -5, -10, 12.5, -5, 10, -12.5, 5, -10, -12.5, 5, 10, -12.5, -5, -10, -12.5, 5, 10, -12.5, -5, 10, -12.5, -5, -10, 12.5, 5, 10, -12.5, 5, 10, 12.5, 5, -10, -12.5, 5, 10, -12.5, 5, -10, 12.5, 5, -10, -12.5, -5, 10, 12.5, -5, 10, -12.5, -5, -10, 12.5, -5, 10, 12.5, -5, -10, -12.5, -5, -10 )
+
+[sub_resource type="OpenSimplexNoise" id=32]
+
+[sub_resource type="NoiseTexture" id=33]
+seamless = true
+noise = SubResource( 32 )
+
+[sub_resource type="SpatialMaterial" id=34]
+flags_vertex_lighting = true
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.505882, 0.313726, 0.219608, 1 )
+albedo_texture = SubResource( 33 )
+
+[sub_resource type="CubeMesh" id=35]
+material = SubResource( 34 )
+size = Vector3( 25, 10, 20 )
+
+[node name="terrain" type="Spatial"]
+
+[node name="ground" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
+visible = false
+mesh = SubResource( 2 )
+skeleton = NodePath("../..")
+
+[node name="hterrain" type="Spatial" parent="."]
+script = ExtResource( 16 )
+lod_scale = 2.0
+centered = true
+_terrain_data = ExtResource( 12 )
+chunk_size = 8
+collision_enabled = true
+collision_layer = 1
+collision_mask = 1
+shader_type = "Custom"
+custom_shader = SubResource( 38 )
+custom_globalmap_shader = null
+texture_set = SubResource( 37 )
+render_layers = 1
+shader_params/albedo = Color( 0.54902, 0.54902, 0.54902, 1 )
+shader_params/u_ground_uv_scale_per_texture = Plane( 5, 5, 5, 5 )
+shader_params/u_depth_blending = false
+shader_params/u_triplanar = true
+shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
+shader_params/u_globalmap_blend_start = null
+shader_params/u_globalmap_blend_distance = null
+shader_params/u_colormap_opacity_per_texture = Plane( 1, 1, 1, 1 )
+
+[node name="road" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 182.834, 0.05, 137.639 )
+
+[node name="car" type="Spatial" parent="road"]
+transform = Transform( -4.37114e-08, 4.37114e-08, 1, 3.55271e-15, 1, -4.37114e-08, -1, 0, -4.37114e-08, -0.0428009, 0.75, -10.2037 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 200.0
+lod_2_max_distance = 300.0
+
+[node name="mesh-lod0" type="MeshInstance" parent="road/car"]
+transform = Transform( 1, 0, 0, 0, 1, -7.17753e-23, 0, 0, 1, 0, 0, 0 )
+mesh = SubResource( 8 )
+skeleton = NodePath("../../road_end")
+material/0 = SubResource( 12 )
+
+[node name="StaticBody" type="StaticBody" parent="road/car/mesh-lod0"]
+
+[node name="CollisionShape" type="CollisionShape" parent="road/car/mesh-lod0/StaticBody"]
+shape = SubResource( 17 )
+
+[node name="gates" type="Spatial" parent="road"]
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="gates-lod0" type="Spatial" parent="road/gates"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.35739 )
+
+[node name="poll1" type="MeshInstance" parent="road/gates/gates-lod0"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2.5, 0 )
+mesh = SubResource( 13 )
+
+[node name="StaticBody" type="StaticBody" parent="road/gates/gates-lod0/poll1"]
+
+[node name="CollisionShape" type="CollisionShape" parent="road/gates/gates-lod0/poll1/StaticBody"]
+shape = SubResource( 18 )
+
+[node name="poll2" type="MeshInstance" parent="road/gates/gates-lod0"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.5, 0 )
+mesh = SubResource( 13 )
+
+[node name="StaticBody" type="StaticBody" parent="road/gates/gates-lod0/poll2"]
+
+[node name="CollisionShape" type="CollisionShape" parent="road/gates/gates-lod0/poll2/StaticBody"]
+shape = SubResource( 19 )
+
+[node name="sign" type="MeshInstance" parent="road/gates/gates-lod0"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.10532, 0 )
+mesh = SubResource( 16 )
+
+[node name="road_end" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 9.38773e-07, -14.9026 )
+cast_shadow = 0
+mesh = SubResource( 9 )
+
+[node name="road1" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 0 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road2" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 10 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road3" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 20 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road4" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 30 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road5" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 40 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road6" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 50 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road7" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 60 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road8" type="CSGMesh" parent="road"]
+transform = Transform( 1, 0, 0, 0, 2.98023e-08, 1, 0, -1, 2.98023e-08, 0, 0, 70 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road9" type="CSGMesh" parent="road"]
+transform = Transform( 0.707107, -0.707107, 2.10734e-08, 0, 2.98023e-08, 1, -0.707107, -0.707107, 2.10734e-08, 1.73645, 0, 75.2626 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road10" type="CSGMesh" parent="road"]
+transform = Transform( 0.707107, -0.707107, 2.10734e-08, 0, 2.98023e-08, 1, -0.707107, -0.707107, 2.10734e-08, 8.80753, -2.98023e-07, 82.3337 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road11" type="CSGMesh" parent="road"]
+transform = Transform( 0.707107, -0.707107, 2.10734e-08, 0, 2.98023e-08, 1, -0.707107, -0.707107, 2.10734e-08, 15.8786, -5.96046e-07, 89.4048 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road12" type="CSGMesh" parent="road"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 20.8287, -6.22123e-07, 91.5758 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road13" type="CSGMesh" parent="road"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 30.8287, -1.86265e-07, 91.5758 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="road14" type="CSGMesh" parent="road"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 40.8287, 2.49594e-07, 91.5758 )
+cast_shadow = 0
+mesh = SubResource( 5 )
+
+[node name="trees" type="Spatial" parent="."]
+
+[node name="tree01" type="Spatial" parent="trees"]
+transform = Transform( 0.935746, 0, -0.352675, 0, 1, 0, 0.352675, 0, 0.935746, 198.496, 0.42, 203.914 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 200.0
+lod_2_max_distance = 300.0
+
+[node name="tree_large-lod0" parent="trees/tree01" instance=ExtResource( 14 )]
+transform = Transform( 100, 0, 0, 0, -3.57628e-05, 100, 0, -100, -3.57628e-05, 0, 0.127581, 0 )
+mesh = SubResource( 42 )
+skeleton = NodePath("../..")
+
+[node name="tree02" type="Spatial" parent="trees"]
+transform = Transform( 0.916153, 0, 0.400829, 0, 1, 0, -0.400829, 0, 0.916153, 206.732, 0.42, 219.169 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="tree_large-lod0" parent="trees/tree02" instance=ExtResource( 14 )]
+transform = Transform( 100, 0, 0, 0, -3.57628e-05, 100, 0, -100, -3.57628e-05, 0, 0, 0 )
+mesh = SubResource( 42 )
+skeleton = NodePath("../..")
+
+[node name="tree03" type="Spatial" parent="trees"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 195.195, 0.42, 237.303 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="tree_large-lod0" parent="trees/tree03" instance=ExtResource( 14 )]
+transform = Transform( 100, 0, 0, 0, -3.57628e-05, 100, 0, -100, -3.57628e-05, 0, 0.0182199, -4.52283 )
+mesh = SubResource( 42 )
+skeleton = NodePath("../..")
+
+[node name="tree04" type="Spatial" parent="trees"]
+transform = Transform( 0.375868, 0, -0.926673, 0, 1, 0, 0.926673, 0, 0.375868, 174.817, 0.42, 227.26 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="tree_large-lod0" parent="trees/tree04" instance=ExtResource( 14 )]
+transform = Transform( 100, 7.62939e-06, 9.09495e-13, 0, -3.57628e-05, 100, 7.62939e-06, -100, -3.57628e-05, -0.68811, 4.67934, 1.69651 )
+mesh = SubResource( 42 )
+skeleton = NodePath("../..")
+
+[node name="tree05" type="Spatial" parent="trees"]
+transform = Transform( -0.0698784, 0, 0.997555, 0, 1, 0, -0.997555, 0, -0.0698784, 167.295, 0.42, 212.019 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="tree_large-lod0" parent="trees/tree05" instance=ExtResource( 14 )]
+transform = Transform( 100, -2.38419e-06, 4.54747e-13, 0, -3.57628e-05, 100, -2.38419e-06, -100, -3.57628e-05, -0.161896, 0.466411, 2.31126 )
+mesh = SubResource( 42 )
+skeleton = NodePath("../..")
+
+[node name="lake" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -142.255, -0.38959, -72.8394 )
+
+[node name="lake00" type="MeshInstance" parent="lake"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -21.4952 )
+mesh = SubResource( 7 )
+
+[node name="berth" type="Spatial" parent="."]
+
+[node name="houses" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 139.183, 0, -164.137 )
+
+[node name="house01" type="Spatial" parent="houses"]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6.71729, 0, 0 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="house3-lod0" parent="houses/house01" instance=ExtResource( 15 )]
+
+[node name="house02" type="Spatial" parent="houses"]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6.71729, 0, -13 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="house3-lod0" parent="houses/house02" instance=ExtResource( 15 )]
+
+[node name="house03" type="Spatial" parent="houses"]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6.71729, 0, -25 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="house3-lod0" parent="houses/house03" instance=ExtResource( 15 )]
+
+[node name="house04" type="Spatial" parent="houses"]
+transform = Transform( 7.54979e-08, 0, -1, 0, 1, 0, 1, 0, 7.54979e-08, 21.2827, 0, 0 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="house3-lod0" parent="houses/house04" instance=ExtResource( 15 )]
+
+[node name="house05" type="Spatial" parent="houses"]
+transform = Transform( 7.54979e-08, 0, -1, 0, 1, 0, 1, 0, 7.54979e-08, 21.2827, 0, -13 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="house3-lod0" parent="houses/house05" instance=ExtResource( 15 )]
+
+[node name="house06" type="Spatial" parent="houses"]
+transform = Transform( 7.54979e-08, 0, -1, 0, 1, 0, 1, 0, 7.54979e-08, 21.2827, 0, -25 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="house3-lod0" parent="houses/house06" instance=ExtResource( 15 )]
+
+[node name="paths" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0 )
+visible = false
+
+[node name="path000" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -7.20471e-06, -164.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path001" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -7.4245e-06, -169.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path002" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -7.6443e-06, -174.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path003" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -7.86409e-06, -179.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path004" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -8.08388e-06, -184.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path005" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -8.30367e-06, -189.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path006" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 149.322, -8.34838e-06, -190.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path007" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 142.883, 0, -188 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path008" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 149.322, -8.34838e-06, -178.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path009" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 142.883, 0, -176 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path010" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 149.322, -8.34838e-06, -165.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path011" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 142.883, 0, -163 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path012" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -6.98492e-06, -159.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path013" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -6.76513e-06, -154.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path014" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -6.54534e-06, -149.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path015" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -6.32554e-06, -144.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path016" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 146.132, -6.32554e-06, -144.853 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path017" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 144.583, -6.10575e-06, -141.134 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path018" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 141.048, -5.88596e-06, -137.599 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path019" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 137.512, -5.66617e-06, -134.063 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path020" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 133.977, -5.44637e-06, -130.528 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path021" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 130.441, -5.22658e-06, -126.992 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path022" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 126.906, -5.00679e-06, -123.457 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path024" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 123.37, -4.787e-06, -119.921 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path025" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 119.834, -4.56721e-06, -116.385 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path026" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 116.299, -4.34741e-06, -112.85 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path027" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 112.763, -4.12762e-06, -109.314 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path028" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 109.228, -3.90783e-06, -105.779 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path029" type="CSGMesh" parent="paths"]
+transform = Transform( 1, -9.55343e-16, -4.17594e-23, 0, -4.37114e-08, 1, -9.55343e-16, -1, -4.37114e-08, 107.711, -3.68804e-06, -102.066 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path030" type="CSGMesh" parent="paths"]
+transform = Transform( 1, -9.55343e-16, -4.17594e-23, 0, -4.37114e-08, 1, -9.55343e-16, -1, -4.37114e-08, 107.711, -3.46825e-06, -97.0656 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path032" type="CSGMesh" parent="paths"]
+transform = Transform( 1, -9.55343e-16, -4.17594e-23, 0, -4.37114e-08, 1, -9.55343e-16, -1, -4.37114e-08, 107.711, -3.24845e-06, -92.0656 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path033" type="CSGMesh" parent="paths"]
+transform = Transform( 1, -9.55343e-16, -4.17594e-23, 0, -4.37114e-08, 1, -9.55343e-16, -1, -4.37114e-08, 107.711, -3.02866e-06, -87.0656 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path034" type="CSGMesh" parent="paths"]
+transform = Transform( 1, -9.55343e-16, -4.17594e-23, 0, -4.37114e-08, 1, -9.55343e-16, -1, -4.37114e-08, 107.711, -2.80887e-06, -82.0656 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path035" type="CSGMesh" parent="paths"]
+transform = Transform( 1, -9.55343e-16, -4.17594e-23, 0, -4.37114e-08, 1, -9.55343e-16, -1, -4.37114e-08, 107.711, -2.58908e-06, -77.0656 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path036" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 106.157, -4.49643e-06, -73.3327 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path037" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 102.622, -4.27663e-06, -69.7972 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path039" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 99.0861, -4.05684e-06, -66.2617 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path040" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 95.5505, -3.83705e-06, -62.7261 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path041" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 92.015, -3.61726e-06, -59.1906 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path043" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 88.4795, -3.39746e-06, -55.6551 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path044" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 84.9439, -3.17767e-06, -52.1195 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path045" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 81.2199, -2.95788e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path046" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 76.2199, -2.73809e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path048" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 71.2199, -2.5183e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path049" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 66.2199, -2.2985e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path050" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 61.2199, -2.07871e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path051" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 56.2199, -1.85892e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path052" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 51.2199, -1.63913e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path053" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 46.2199, -1.41934e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path054" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 41.2199, -1.19954e-06, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path055" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 36.2199, -9.79751e-07, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path057" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 31.2199, -7.59959e-07, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path058" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 26.2199, -5.40167e-07, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path059" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 21.2199, -3.20375e-07, -50.5969 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path060" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 17.5, -1.00583e-07, -52.1425 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path061" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 13.9644, 1.19209e-07, -55.678 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path063" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 10.4289, 3.39001e-07, -59.2135 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path064" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 6.89337, 5.58794e-07, -62.7491 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path065" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 3.35784, 7.78586e-07, -66.2846 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path066" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, -0.177694, 9.98378e-07, -69.8201 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path067" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, -3.71323, 1.21817e-06, -73.3557 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path068" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, -7.24876, 1.43796e-06, -76.8912 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path069" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, -10.7843, 1.65775e-06, -80.4268 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path070" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -14.5241, 1.83284e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path071" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -19.5241, 2.05263e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path072" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -24.5241, 2.27243e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path073" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -29.5241, 2.49222e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path074" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -34.5241, 2.71201e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path075" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -39.5241, 2.9318e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path076" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -44.5241, 3.1516e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path077" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -49.5241, 3.37139e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path079" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -54.5241, 3.59118e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path080" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -59.5241, 3.81097e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path081" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -64.5241, 4.03076e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path083" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -69.5241, 4.25056e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path084" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -74.5241, 4.47035e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path085" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -79.5241, 4.69014e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path086" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, -84.5241, 4.90993e-06, -81.9705 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path087" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -88.2822, 5.12972e-06, -80.4181 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path088" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -91.8178, 5.34952e-06, -76.8825 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path089" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -95.3533, 5.56931e-06, -73.347 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path090" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -98.8889, 5.7891e-06, -69.8115 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path091" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -102.424, 6.00889e-06, -66.2759 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path110" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -105.506, 5.69969e-06, 16.1226 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path111" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -109.041, 5.91949e-06, 19.6581 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path112" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -112.577, 6.13928e-06, 23.1937 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path113" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -116.112, 6.35907e-06, 26.7292 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path114" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -119.648, 6.57886e-06, 30.2647 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path115" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -123.183, 6.79493e-06, 33.8003 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path116" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -126.719, 7.01472e-06, 37.3358 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path117" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -130.254, 7.23451e-06, 40.8713 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path118" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -133.79, 7.45431e-06, 44.4069 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path119" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, -137.325, 7.6741e-06, 47.9424 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path092" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 6.22869e-06, -62.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path093" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 6.44848e-06, -57.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path094" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 6.66827e-06, -52.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path095" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 6.88806e-06, -47.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path096" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 7.10785e-06, -42.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path097" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 7.32765e-06, -37.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path098" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 7.54744e-06, -32.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path099" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 7.76723e-06, -27.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path100" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 7.76723e-06, -27.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path120" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 9.30578e-06, 51.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path121" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 9.52557e-06, 56.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path122" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 9.74536e-06, 61.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path123" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 9.96515e-06, 66.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path124" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.01849e-05, 71.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path125" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.04047e-05, 76.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path126" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.06245e-05, 81.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path127" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.08443e-05, 86.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path128" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.08443e-05, 86.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path129" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.10529e-05, 91.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path130" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.12727e-05, 96.5323 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path131" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.14925e-05, 101.532 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path132" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.17123e-05, 106.532 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path133" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.19321e-05, 111.532 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path134" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.21519e-05, 116.532 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path135" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.23717e-05, 121.532 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path136" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.25915e-05, 126.532 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path137" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -138.791, 1.25915e-05, 126.532 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path138" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -136.919, 1.15782e-05, 130.307 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path139" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -133.383, 1.1798e-05, 133.842 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path140" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -129.848, 1.20178e-05, 137.378 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path141" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -126.312, 1.22376e-05, 140.913 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path142" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -122.777, 1.24574e-05, 144.449 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path143" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -119.241, 1.26772e-05, 147.984 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path144" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -115.706, 1.2897e-05, 151.52 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path145" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -112.17, 1.31167e-05, 155.055 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path146" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, -112.17, 1.31167e-05, 155.055 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path101" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 7.97585e-06, -22.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path102" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 8.19564e-06, -17.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path103" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 8.41543e-06, -12.5382 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path104" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 8.63522e-06, -7.53822 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path105" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 8.85502e-06, -2.53822 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path106" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 9.07481e-06, 2.46178 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path107" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 9.2946e-06, 7.46178 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path108" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 9.51439e-06, 12.4618 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path173" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 80.9129, 5.69969e-06, 123.254 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path174" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 77.3774, 5.91949e-06, 126.789 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path175" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 73.8418, 6.13928e-06, 130.325 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path176" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 70.3063, 6.35907e-06, 133.861 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path177" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 63.2353, 6.79493e-06, 140.932 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path185" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 66.7708, 6.57514e-06, 137.396 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path178" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 59.6997, 7.01472e-06, 144.467 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path179" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 56.1642, 7.23451e-06, 148.003 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path180" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 52.6286, 7.45431e-06, 151.538 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path181" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 49.0931, 7.6741e-06, 155.074 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path182" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 1.44541e-06, 109.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path183" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 1.6652e-06, 114.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path184" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 1.885e-06, 119.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path186" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 7.89762e-07, 94.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path187" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 1.00955e-06, 99.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path188" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 1.22935e-06, 104.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path218" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 85.4894, 1.44914e-06, 121.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path219" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 90.4894, 1.22935e-06, 121.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path220" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 95.4894, 1.00955e-06, 121.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path221" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 100.489, 7.89762e-07, 121.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path222" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 105.489, 5.69969e-07, 121.495 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path223" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 109.225, 3.94881e-07, 119.938 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path224" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 112.761, 1.75089e-07, 116.403 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path225" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 116.296, -4.47035e-08, 112.867 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path226" type="CSGMesh" parent="paths"]
+transform = Transform( 0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, -0.707107, -3.09086e-08, 119.832, -2.64496e-07, 109.331 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path227" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 123.561, -4.65661e-07, 107.79 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path228" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 128.561, -6.85453e-07, 107.79 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path229" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 133.561, -9.05246e-07, 107.79 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path230" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 137.282, -1.12504e-06, 109.342 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path231" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 140.817, -1.34483e-06, 112.878 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path232" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 144.353, -1.56462e-06, 116.414 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path233" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 147.888, -1.78441e-06, 119.949 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path234" type="CSGMesh" parent="paths"]
+transform = Transform( -0.707107, 0.707107, 3.09086e-08, 0, -4.37114e-08, 1, 0.707107, 0.707107, 3.09086e-08, 151.424, -2.00421e-06, 123.485 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path235" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 155.196, -2.00421e-06, 125.019 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path236" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 160.196, -2.224e-06, 125.019 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path237" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 165.196, -2.44379e-06, 125.019 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path238" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, 1, 4.37114e-08, 0, -4.37114e-08, 1, 1, 4.37114e-08, 1.91069e-15, 165.196, -2.44379e-06, 125.019 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path189" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 1.3411e-07, 79.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path190" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 3.53903e-07, 84.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path191" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, 5.73695e-07, 89.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path192" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -5.21541e-07, 64.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path193" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -3.01749e-07, 69.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path194" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -8.19564e-08, 74.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path195" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -1.17719e-06, 49.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path196" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -9.574e-07, 54.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path197" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -7.37607e-07, 59.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path198" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -1.83284e-06, 34.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path199" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -1.61305e-06, 39.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path200" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -1.39326e-06, 44.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path201" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -2.48849e-06, 19.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path202" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -2.2687e-06, 24.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path203" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -2.04891e-06, 29.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path204" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -3.14415e-06, 4.49471 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path205" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -2.92435e-06, 9.49471 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path206" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -2.70456e-06, 14.4947 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path207" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -3.7998e-06, -10.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path208" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -3.58e-06, -5.50529 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path209" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -3.36021e-06, -0.505287 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path210" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -4.45545e-06, -25.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path213" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -4.67524e-06, -30.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path214" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -4.89503e-06, -35.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path215" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -5.11482e-06, -40.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path216" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -5.33462e-06, -45.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path217" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -5.465e-06, -48.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path211" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -4.23566e-06, -20.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path212" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, 82.4331, -4.01586e-06, -15.5053 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path109" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 5.96046e-08, 2.6054e-15, 0, -4.37114e-08, 1, 5.96046e-08, -1, -4.37114e-08, -103.964, 9.51439e-06, 12.4618 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path082" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -108.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path042" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -103.418, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path147" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -98.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path148" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -93.4148, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path149" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -88.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path047" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -83.4181, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path150" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -78.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path151" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -73.5, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path152" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -68.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path056" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -63.4181, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path153" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -58.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path154" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -53.4148, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path155" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -48.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path062" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -43.4181, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path156" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -38.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path157" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -33.5, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path158" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -29.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path078" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -24.4181, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path159" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -19.42, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path160" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -14.4148, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path161" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -9.41998, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path162" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, -4.41812, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path163" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 0.580017, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path164" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 5.49995, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path165" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 10.5163, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path166" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 15.5181, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path167" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 20.5163, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path168" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 25.5215, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path169" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 30.5163, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path170" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 35.5182, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path171" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 40.5163, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path172" type="CSGMesh" parent="paths"]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 45.4362, 0, 156.644 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="path031" type="CSGMesh" parent="paths"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1370.95, 0 )
+mesh = SubResource( 20 )
+material = SubResource( 21 )
+
+[node name="grave" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -186.374, 0, 99.2631 )
+
+[node name="grave" type="Spatial" parent="grave"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="grave-lod0" type="Area" parent="grave/grave"]
+collision_layer = 2
+collision_mask = 2
+monitoring = false
+script = ExtResource( 19 )
+title = "grave"
+type = 1
+
+[node name="mesh" type="MeshInstance" parent="grave/grave/grave-lod0"]
+mesh = SubResource( 25 )
+skeleton = NodePath("../..")
+
+[node name="StaticBody" type="StaticBody" parent="grave/grave/grave-lod0/mesh"]
+
+[node name="CollisionShape" type="CollisionShape" parent="grave/grave/grave-lod0/mesh/StaticBody"]
+shape = SubResource( 27 )
+
+[node name="shape" type="CollisionShape" parent="grave/grave/grave-lod0"]
+shape = SubResource( 26 )
+
+[node name="beach" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -103.359, 0, -129.309 )
+
+[node name="4boats" type="Spatial" parent="beach"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.30768, 0, 0 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="4boats-lod0" type="MeshInstance" parent="beach/4boats"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+mesh = SubResource( 28 )
+
+[node name="4boats-stairs" type="Spatial" parent="beach"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 4.80768, 0, 0 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="4boats-stairs-lod0" type="MeshInstance" parent="beach/4boats-stairs"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1, 0 )
+mesh = SubResource( 29 )
+
+[node name="boat" type="Spatial" parent="beach"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.90828, 0, 4.50728 )
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="boat-lod0" type="MeshInstance" parent="beach/boat"]
+mesh = SubResource( 31 )
+
+[node name="reception" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 180.779, 0, 99.8229 )
+
+[node name="reception" type="Spatial" parent="reception"]
+script = ExtResource( 13 )
+lod_0_max_distance = 100.0
+lod_1_max_distance = 300.0
+lod_2_max_distance = 400.0
+
+[node name="StaticBody" type="StaticBody" parent="reception/reception"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 5, -2 )
+
+[node name="CollisionShape" type="CollisionShape" parent="reception/reception/StaticBody"]
+shape = SubResource( 36 )
+
+[node name="reception-lod0" type="MeshInstance" parent="reception/reception"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 5, -2 )
+mesh = SubResource( 35 )
+
+[node name="moon_light" type="DirectionalLight" parent="."]
+transform = Transform( -0.437602, 0, -0.899169, 0, 1, 0, 0.899169, 0, -0.437602, 0, 0, 0 )
+visible = false
+light_color = Color( 0.4836, 0.55276, 0.78, 1 )
+light_energy = 0.5
+directional_shadow_mode = 0
+directional_shadow_depth_range = 1

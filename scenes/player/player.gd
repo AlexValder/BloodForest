@@ -8,7 +8,7 @@ export(Resource) var health
 const DUCK_SPEED := 2.5
 const WALK_SPEED := 4.0
 const RUN_SPEED := 7.0
-const GRAVITY := -160
+const GRAVITY := -320
 
 onready var _camera := $player_camera as PlayerCamera
 onready var _ray := $player_camera/arm as RayCast
@@ -170,7 +170,8 @@ func _physics_process(delta: float) -> void:
     _velocity.z = move_dir.z * _speed()
     _velocity.y = GRAVITY * delta
 
-    _velocity = move_and_slide_with_snap(_velocity, _snap_vector)
+    _velocity = move_and_slide_with_snap(
+        _velocity, _snap_vector, Vector3.UP, true)
 
 
 func _process_collision(coll: InterArea) -> void:

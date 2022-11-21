@@ -1,7 +1,7 @@
 extends Node
 class_name MainMenu
 
-onready var _level_select := $gui/level_select as GridContainer
+onready var _level_select := $"%level_select" as GridContainer
 onready var _camera := $"%camera" as Camera
 
 func _ready() -> void:
@@ -28,7 +28,11 @@ func load_level(name: String) -> void:
 
 
 func _on_start_button_up() -> void:
-    _level_select.visible = !_level_select.visible
+    _level_select.modulate.a = 1 - _level_select.modulate.a
+
+
+func _on_credits_button_up() -> void:
+    GameManager.show_credits()
 
 
 func _on_exit_button_up() -> void:

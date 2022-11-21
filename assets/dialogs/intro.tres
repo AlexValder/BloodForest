@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource( 1 )
-resource_version = 26
+resource_version = 33
 syntax_version = 2
 raw_text = "~ intro_dialog
 
@@ -21,18 +21,18 @@ Gabriel: Yes?
 Driver: Anyway, what are you doing for a living? I would never decide to spend my weekend there just to rest... I’m not even sure it’s opened.
 Gabriel: I...
 - Construction engineer [Lie]
-	set save.intro.lie = \"engineer\"
+	do set_level_data(0, \"lie\", \"engineer\")
 	Gabriel: I am a construction engineer. Wanted to spend some time far away from city, surrounded by trees and silence.
 	Gabriel: I got a key from the owners, I’m staying at one of the cabins.
 	Driver: To be honest, I imagined you guys to be built togher… No offense. My late uncle was one too, actually. Died from drinking too much. And you don’t have any bags with you...
 	Gabriel: (internally) He did not believe me.
 - Clerk [Lie]
-	set save.intro.lie = \"clerk\"
+	do set_level_data(0, \"lie\", \"clerk\")
 	Gabriel: I am a clerk at a hotel. Got sick of dealing with customers, wanted to give myself of treat of no other people around for a while...
 	Driver: Ah, so you’re one of those... I see.
 	Gabriel: (internally) That cut it short.
 - Accountant [Lie]
-	set save.intro.lie = \"accountant\"
+	do set_level_data(0, \"lie\", \"accountant\")
 	Gabriel: I am an accountant. Numbers,  taxes, spreadsheets… all of this. I want nothing of it, but I get paid, and it is not like I can do anything else… So I wanted some time away from all of this.
 	Driver: Well, it’s not too late to change profession, if you’re that sick of it. You’re still young, your whole life is before you, after all. Think about it while you’re here.
 	Gabriel: (internally) He is nice… I almost feel sorry.
@@ -96,24 +96,18 @@ lines = {
 "15": {
 "mutation": {
 "expression": [ {
-"type": "variable",
-"value": "save"
-}, {
-"type": "dot"
-}, {
-"type": "variable",
-"value": "intro"
-}, {
-"type": "dot"
-}, {
-"type": "variable",
+"function": "set_level_data",
+"type": "function",
+"value": [ [ {
+"type": "number",
+"value": 0
+} ], [ {
+"type": "string",
 "value": "lie"
-}, {
-"type": "assignment",
-"value": "="
-}, {
+} ], [ {
 "type": "string",
 "value": "engineer"
+} ] ]
 } ]
 },
 "next_id": "16",
@@ -180,24 +174,18 @@ lines = {
 "21": {
 "mutation": {
 "expression": [ {
-"type": "variable",
-"value": "save"
-}, {
-"type": "dot"
-}, {
-"type": "variable",
-"value": "intro"
-}, {
-"type": "dot"
-}, {
-"type": "variable",
+"function": "set_level_data",
+"type": "function",
+"value": [ [ {
+"type": "number",
+"value": 0
+} ], [ {
+"type": "string",
 "value": "lie"
-}, {
-"type": "assignment",
-"value": "="
-}, {
+} ], [ {
 "type": "string",
 "value": "clerk"
+} ] ]
 } ]
 },
 "next_id": "22",
@@ -245,24 +233,18 @@ lines = {
 "26": {
 "mutation": {
 "expression": [ {
-"type": "variable",
-"value": "save"
-}, {
-"type": "dot"
-}, {
-"type": "variable",
-"value": "intro"
-}, {
-"type": "dot"
-}, {
-"type": "variable",
+"function": "set_level_data",
+"type": "function",
+"value": [ [ {
+"type": "number",
+"value": 0
+} ], [ {
+"type": "string",
 "value": "lie"
-}, {
-"type": "assignment",
-"value": "="
-}, {
+} ], [ {
 "type": "string",
 "value": "accountant"
+} ] ]
 } ]
 },
 "next_id": "27",
